@@ -9,7 +9,7 @@ import { StatusList } from "./status-list"
 import { PaymentFormModal } from "./payment-form-modal"
 import { LeaseFormModal } from "./lease-form-modal"
 import * as actions from "@/app/actions"
-import type { Apartment, Lease, Payment } from "@/types"
+import type { Apartment, Lease, Payment, Currency } from "@/types"
 
 interface DashboardViewProps {
   apartments: Apartment[]
@@ -17,9 +17,10 @@ interface DashboardViewProps {
   payments: Payment[]
   initialYear: number;
   initialMonth: number;
+  currency: Currency;
 }
 
-export function DashboardView({ apartments, leases, payments, initialYear, initialMonth }: DashboardViewProps) {
+export function DashboardView({ apartments, leases, payments, initialYear, initialMonth, currency }: DashboardViewProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   
@@ -77,9 +78,10 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
         missing={summary.missing}
         occupiedCount={summary.occupiedCount}
         vacantCount={summary.vacantCount}
+        currency={currency}
       />
 
-      <StatusList statuses={summary.statuses} onAddPayment={handleAddPaymentClick} onAddLease={handleAddLeaseClick} />
+      <StatusList statuses={summary.statuses} onAddPayment={handleAddPaymentClick} onAddLease={handleAddLeaseClick} currency={currency} />
 
       <PaymentFormModal
         open={paymentModal.open}

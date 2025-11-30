@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency, formatDate } from "@/lib/rental-utils"
-import type { Apartment, Lease } from "@/types"
+import type { Apartment, Lease, Currency } from "@/types"
 
 interface ApartmentCardProps {
   apartment: Apartment
@@ -13,9 +13,10 @@ interface ApartmentCardProps {
   onEdit: () => void
   onDelete: () => void
   onManageLeases: () => void
+  currency: Currency
 }
 
-export function ApartmentCard({ apartment, leases, onEdit, onDelete, onManageLeases }: ApartmentCardProps) {
+export function ApartmentCard({ apartment, leases, onEdit, onDelete, onManageLeases, currency }: ApartmentCardProps) {
   const apartmentLeases = leases.filter((l) => l.apartmentId === apartment.id)
   const activeLeases = apartmentLeases.filter((l) => new Date(l.endDate) >= new Date())
 
@@ -25,7 +26,7 @@ export function ApartmentCard({ apartment, leases, onEdit, onDelete, onManageLea
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-lg font-headline">{apartment.name}</CardTitle>
-            <p className="text-2xl font-bold mt-1">{formatCurrency(apartment.price)}/mo</p>
+            <p className="text-2xl font-bold mt-1">{formatCurrency(apartment.price, currency)}/mo</p>
           </div>
           <div className="flex gap-1">
             <Button variant="ghost" size="icon" onClick={onEdit}>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatDate, formatCurrency } from "@/lib/rental-utils"
-import type { Apartment, Lease, Payment } from "@/types"
+import type { Apartment, Lease, Payment, Currency } from "@/types"
 import { Separator } from "@/components/ui/separator"
 
 interface LeaseManagementModalProps {
@@ -21,6 +21,7 @@ interface LeaseManagementModalProps {
   onDeleteLease: (lease: Lease) => void
   onAddPayment: (leaseId: string) => void
   onDeletePayment: (payment: Payment) => void
+  currency: Currency
 }
 
 export function LeaseManagementModal({
@@ -34,6 +35,7 @@ export function LeaseManagementModal({
   onDeleteLease,
   onAddPayment,
   onDeletePayment,
+  currency,
 }: LeaseManagementModalProps) {
   const [expandedLease, setExpandedLease] = useState<string | null>(null)
 
@@ -59,7 +61,7 @@ export function LeaseManagementModal({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Manage Leases for {apartment.name}</DialogTitle>
-          <DialogDescription>Base rent: {formatCurrency(apartment.price)}/month</DialogDescription>
+          <DialogDescription>Base rent: {formatCurrency(apartment.price, currency)}/month</DialogDescription>
         </DialogHeader>
 
         <div className="flex justify-end items-center -mt-4">
@@ -132,7 +134,7 @@ export function LeaseManagementModal({
                               className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm"
                             >
                               <div>
-                                <span className="font-medium">{formatCurrency(payment.amount)}</span>
+                                <span className="font-medium">{formatCurrency(payment.amount, currency)}</span>
                                 <span className="text-muted-foreground ml-2">{formatDate(payment.date)}</span>
                                 {payment.isFullPayment && (
                                   <Badge variant="outline" className="ml-2 text-xs">

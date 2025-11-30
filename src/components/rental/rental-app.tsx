@@ -13,11 +13,18 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 import { DashboardView } from "@/components/rental/dashboard-view"
 import { ApartmentsView } from "@/components/rental/apartments-view"
 import { remindUserToBackupData } from '@/ai/flows/data-backup-and-restore';
-import type { Apartment, Lease, Payment } from "@/types"
+import type { Apartment, Lease, Payment, Currency } from "@/types"
 
 interface RentalAppProps {
   apartments: Apartment[]
@@ -29,6 +36,7 @@ interface RentalAppProps {
 
 export function RentalApp({ apartments, leases, payments, initialYear, initialMonth }: RentalAppProps) {
   const [activeTab, setActiveTab] = useState("dashboard")
+  const [currency, setCurrency] = useState<Currency>("MGA");
   const [backupReminder, setBackupReminder] = useState<string | null>(null);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
 
@@ -58,10 +66,21 @@ export function RentalApp({ apartments, leases, payments, initialYear, initialMo
                 <p className="text-sm text-muted-foreground">Manage your rental properties</p>
               </div>
             </div>
-            <Button variant="outline" onClick={handleBackupClick}>
-              <ShieldCheck className="mr-2 h-4 w-4" />
-              Data Backup
-            </Button>
+            <div className="flex items-center gap-2">
+              <Select value={currency} onValueChange={(value) => setCurrency(value as Currency)}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MGA">Ariary (Ar)</SelectItem>
+                  <SelectItem value="Fmg">Fmg</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" onClick={handleBackupClick}>
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Data Backup
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -86,11 +105,17 @@ export function RentalApp({ apartments, leases, payments, initialYear, initialMo
               payments={payments}
               initialYear={initialYear}
               initialMonth={initialMonth}
+              currency={currency}
             />
           </TabsContent>
 
           <TabsContent value="apartments">
-            <ApartmentsView apartments={apartments} leases={leases} payments={payments} />
+            <ApartmentsView 
+              apartments={apartments} 
+              leases={leases} 
+              payments={payments}
+              currency={currency}
+            />
           </TabsContent>
         </Tabs>
       </main>

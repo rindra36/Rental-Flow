@@ -5,15 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, User, Calendar } from "lucide-react"
 import { formatCurrency, formatDate } from "@/lib/rental-utils"
-import type { ApartmentStatusInfo } from "@/types"
+import type { ApartmentStatusInfo, Currency } from "@/types"
 
 interface StatusListProps {
   statuses: ApartmentStatusInfo[]
   onAddPayment: (leaseId: string, apartmentName: string) => void
   onAddLease: (apartmentId: string, apartmentName: string) => void
+  currency: Currency
 }
 
-export function StatusList({ statuses, onAddPayment, onAddLease }: StatusListProps) {
+export function StatusList({ statuses, onAddPayment, onAddLease, currency }: StatusListProps) {
   const getStatusBadge = (status: ApartmentStatusInfo["status"]) => {
     switch (status) {
       case "vacant":
@@ -42,7 +43,7 @@ export function StatusList({ statuses, onAddPayment, onAddLease }: StatusListPro
                   <h3 className="font-semibold">{info.apartment.name}</h3>
                   {getStatusBadge(info.status)}
                 </div>
-                <p className="text-sm text-muted-foreground">Base rent: {formatCurrency(info.apartment.price)}</p>
+                <p className="text-sm text-muted-foreground">Base rent: {formatCurrency(info.apartment.price, currency)}</p>
                 {info.lease && (
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
                     {info.lease.tenantName && (
@@ -65,11 +66,11 @@ export function StatusList({ statuses, onAddPayment, onAddLease }: StatusListPro
                     <div className="text-left sm:text-right">
                       <p className="text-sm">
                         Collected:{" "}
-                        <span className="font-semibold text-emerald-600">{formatCurrency(info.totalPaid)}</span>
+                        <span className="font-semibold text-emerald-600">{formatCurrency(info.totalPaid, currency)}</span>
                       </p>
                       {info.deficit > 0 && !info.payments.some(p => p.isFullPayment) && (
                         <p className="text-sm">
-                          Missing: <span className="font-semibold text-destructive">{formatCurrency(info.deficit)}</span>
+                          Missing: <span className="font-semibold text-destructive">{formatCurrency(info.deficit, currency)}</span>
                         </p>
                       )}
                     </div>

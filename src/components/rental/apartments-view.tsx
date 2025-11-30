@@ -11,15 +11,16 @@ import { LeaseManagementModal } from "./lease-management-modal"
 import { PaymentFormModal } from "./payment-form-modal"
 import { DeleteConfirmModal } from "./delete-confirm-modal"
 import * as actions from "@/app/actions"
-import type { Apartment, Lease, Payment } from "@/types"
+import type { Apartment, Lease, Payment, Currency } from "@/types"
 
 interface ApartmentsViewProps {
   apartments: Apartment[]
   leases: Lease[]
   payments: Payment[]
+  currency: Currency
 }
 
-export function ApartmentsView({ apartments, leases, payments }: ApartmentsViewProps) {
+export function ApartmentsView({ apartments, leases, payments, currency }: ApartmentsViewProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -92,6 +93,7 @@ export function ApartmentsView({ apartments, leases, payments }: ApartmentsViewP
               onEdit={() => setApartmentModal({ open: true, apartment })}
               onDelete={() => setDeleteModal({ open: true, type: "apartment", id: apartment.id, name: apartment.name })}
               onManageLeases={() => setLeaseManagementModal({ open: true, apartment })}
+              currency={currency}
             />
           ))}
         </div>
@@ -128,6 +130,7 @@ export function ApartmentsView({ apartments, leases, payments }: ApartmentsViewP
             }
           }}
           onDeletePayment={(payment) => setDeleteModal({ open: true, type: "payment", id: payment.id, name: "this payment" })}
+          currency={currency}
         />
       )}
 

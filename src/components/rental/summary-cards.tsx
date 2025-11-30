@@ -3,6 +3,7 @@
 import { DollarSign, TrendingUp, TrendingDown, Home } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { formatCurrency } from "@/lib/rental-utils"
+import type { Currency } from "@/types"
 
 interface SummaryCardsProps {
   expectedIncome: number
@@ -10,9 +11,10 @@ interface SummaryCardsProps {
   missing: number
   occupiedCount: number
   vacantCount: number
+  currency: Currency
 }
 
-export function SummaryCards({ expectedIncome, collected, missing, occupiedCount, vacantCount }: SummaryCardsProps) {
+export function SummaryCards({ expectedIncome, collected, missing, occupiedCount, vacantCount, currency }: SummaryCardsProps) {
   const percentageCollected = expectedIncome > 0 ? Math.round((collected / expectedIncome) * 100) : 0;
   
   return (
@@ -23,7 +25,7 @@ export function SummaryCards({ expectedIncome, collected, missing, occupiedCount
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(expectedIncome)}</div>
+          <div className="text-2xl font-bold">{formatCurrency(expectedIncome, currency)}</div>
           <p className="text-xs text-muted-foreground">
             From {occupiedCount} occupied unit{occupiedCount !== 1 ? "s" : ""}
           </p>
@@ -36,7 +38,7 @@ export function SummaryCards({ expectedIncome, collected, missing, occupiedCount
           <TrendingUp className="h-4 w-4 text-emerald-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-emerald-600">{formatCurrency(collected)}</div>
+          <div className="text-2xl font-bold text-emerald-600">{formatCurrency(collected, currency)}</div>
           <p className="text-xs text-muted-foreground">
             {percentageCollected}% of expected
           </p>
@@ -49,7 +51,7 @@ export function SummaryCards({ expectedIncome, collected, missing, occupiedCount
           <TrendingDown className="h-4 w-4 text-red-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-red-600">{formatCurrency(missing)}</div>
+          <div className="text-2xl font-bold text-red-600">{formatCurrency(missing, currency)}</div>
           <p className="text-xs text-muted-foreground">Outstanding balance</p>
         </CardContent>
       </Card>

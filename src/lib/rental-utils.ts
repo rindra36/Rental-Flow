@@ -1,4 +1,4 @@
-import type { Apartment, Lease, Payment, ApartmentStatusInfo, ApartmentStatus } from "@/types"
+import type { Apartment, Lease, Payment, ApartmentStatusInfo, ApartmentStatus, Currency } from "@/types"
 
 // Check if a lease is active during a specific month
 export function isLeaseActiveInMonth(lease: Lease, year: number, month: number): boolean {
@@ -96,11 +96,24 @@ export function calculateDashboardSummary(
 }
 
 // Format currency
-export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount)
+export function formatCurrency(amount: number, currency: Currency = 'MGA'): string {
+  const displayAmount = currency === 'Fmg' ? amount * 5 : amount;
+  const options: Intl.NumberFormatOptions = {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'code',
+  };
+
+  if (currency === 'MGA') {
+    options.currency = 'MGA';
+  } else {
+    // Fmg is not a standard ISO currency code, so we format it manually
+    return `Fmg ${displayAmount.toLocaleString('fr-MG')}`;
+  }
+
+  return new Intl.NumberFormat("fr-MG", options)
+    .format(displayAmount)
+    .replace('MGA', 'Ar');
 }
 
 // Format date

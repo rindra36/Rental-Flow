@@ -30,3 +30,5 @@ export interface ApartmentStatusInfo {
   totalPaid: number
   deficit: number
 }
+
+export type Currency = 'MGA' | 'Fmg';
