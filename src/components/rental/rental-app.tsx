@@ -23,9 +23,11 @@ interface RentalAppProps {
   apartments: Apartment[]
   leases: Lease[]
   payments: Payment[]
+  initialYear: number;
+  initialMonth: number;
 }
 
-export function RentalApp({ apartments, leases, payments }: RentalAppProps) {
+export function RentalApp({ apartments, leases, payments, initialYear, initialMonth }: RentalAppProps) {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [backupReminder, setBackupReminder] = useState<string | null>(null);
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
@@ -78,7 +80,13 @@ export function RentalApp({ apartments, leases, payments }: RentalAppProps) {
           </TabsList>
 
           <TabsContent value="dashboard">
-            <DashboardView apartments={apartments} leases={leases} payments={payments} />
+            <DashboardView 
+              apartments={apartments} 
+              leases={leases} 
+              payments={payments}
+              initialYear={initialYear}
+              initialMonth={initialMonth}
+            />
           </TabsContent>
 
           <TabsContent value="apartments">

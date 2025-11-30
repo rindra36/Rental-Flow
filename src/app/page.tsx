@@ -6,6 +6,15 @@ export const revalidate = 0;
 
 export default async function RentalDashboardPage() {
   const { apartments, leases, payments } = await getRentalData();
+  const today = new Date();
+  const initialYear = today.getFullYear();
+  const initialMonth = today.getMonth();
 
-  return <RentalApp apartments={apartments} leases={leases} payments={payments} />;
+  return <RentalApp 
+    apartments={apartments} 
+    leases={leases} 
+    payments={payments}
+    initialYear={initialYear}
+    initialMonth={initialMonth}
+  />;
 }

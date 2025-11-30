@@ -15,15 +15,16 @@ interface DashboardViewProps {
   apartments: Apartment[]
   leases: Lease[]
   payments: Payment[]
+  initialYear: number;
+  initialMonth: number;
 }
 
-export function DashboardView({ apartments, leases, payments }: DashboardViewProps) {
+export function DashboardView({ apartments, leases, payments, initialYear, initialMonth }: DashboardViewProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   
-  const today = new Date()
-  const [year, setYear] = useState(today.getFullYear())
-  const [month, setMonth] = useState(today.getMonth())
+  const [year, setYear] = useState(initialYear)
+  const [month, setMonth] = useState(initialMonth)
 
   const [paymentModal, setPaymentModal] = useState<{ open: boolean; leaseId: string; apartmentName: string }>({ open: false, leaseId: "", apartmentName: "" })
   const [leaseModal, setLeaseModal] = useState<{ open: boolean; apartmentId: string; apartmentName: string }>({ open: false, apartmentId: "", apartmentName: "" })
