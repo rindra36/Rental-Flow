@@ -5,8 +5,10 @@ export function isLeaseActiveInMonth(lease: Lease, year: number, month: number):
   const monthStart = new Date(year, month, 1)
   const monthEnd = new Date(year, month + 1, 0) // Last day of the month
 
-  const leaseStart = new Date(lease.startDate)
-  const leaseEnd = new Date(lease.endDate)
+  // Use UTC to avoid timezone issues during parsing
+  const leaseStart = new Date(lease.startDate + 'T00:00:00Z');
+  const leaseEnd = new Date(lease.endDate + 'T00:00:00Z');
+
 
   // Lease overlaps with month if it starts before month ends AND ends after month starts
   return leaseStart <= monthEnd && leaseEnd >= monthStart
@@ -15,8 +17,9 @@ export function isLeaseActiveInMonth(lease: Lease, year: number, month: number):
 // Get payments for a specific month
 export function getPaymentsInMonth(payments: Payment[], year: number, month: number): Payment[] {
   return payments.filter((payment) => {
-    const paymentDate = new Date(payment.date)
-    return paymentDate.getFullYear() === year && paymentDate.getMonth() === month
+    // Use UTC to avoid timezone issues during parsing
+    const paymentDate = new Date(payment.date + 'T00:00:00Z');
+    return paymentDate.getUTCFullYear() === year && paymentDate.getUTCMonth() === month
   })
 }
 
@@ -57,7 +60,7 @@ export function calculateApartmentStatus(
   return {
     apartment,
     status,
-lease: activeLease,
+    lease: activeLease,
     payments: leasePayments,
     totalPaid,
     deficit: Math.max(0, apartment.price - totalPaid),
@@ -103,16 +106,16 @@ export function formatCurrency(amount: number): string {
 // Format date
 export function formatDate(dateString: string): string {
   // Add a time to the date string to avoid timezone issues where it might be interpreted as the previous day
-  const date = new Date(dateString);
-  const userTimezoneOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() + userTimezoneOffset).toLocaleDateString("en-US", {
+  const date = new Date(dateString + 'T00:00:00Z');
+  return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   });
 }
 
 // Get month name
 export function getMonthName(month: number): string {
-  return new Date(2025, month, 1).toLocaleDateString("en-US", { month: "long" })
+  return new Date(Date.UTC(2025, month, 1)).toLocaleDateString("en-US", { month: "long", timeZone: "UTC" })
 }
