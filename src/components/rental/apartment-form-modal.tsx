@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { Apartment } from "@/types"
+import type { Apartment, Currency } from "@/types"
 import { Loader2 } from "lucide-react"
 
 interface ApartmentFormModalProps {
@@ -14,9 +14,10 @@ interface ApartmentFormModalProps {
   onClose: () => void
   onSave: (data: { name: string; price: number }) => Promise<void>
   apartment?: Apartment | null
+  currency: Currency
 }
 
-export function ApartmentFormModal({ open, onClose, onSave, apartment }: ApartmentFormModalProps) {
+export function ApartmentFormModal({ open, onClose, onSave, apartment, currency }: ApartmentFormModalProps) {
   const [name, setName] = useState("")
   const [price, setPrice] = useState("")
   const [isPending, startTransition] = useTransition();
@@ -65,7 +66,7 @@ export function ApartmentFormModal({ open, onClose, onSave, apartment }: Apartme
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="price">Monthly Rent ($)</Label>
+            <Label htmlFor="price">Monthly Rent ({currency === 'MGA' ? 'Ar' : 'Fmg'})</Label>
             <Input
               id="price"
               type="number"

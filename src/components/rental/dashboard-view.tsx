@@ -89,6 +89,7 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
         onSave={handleSavePayment}
         leaseId={paymentModal.leaseId}
         apartmentName={paymentModal.apartmentName}
+        currency={currency}
       />
 
       <LeaseFormModal

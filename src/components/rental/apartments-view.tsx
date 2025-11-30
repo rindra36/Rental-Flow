@@ -104,6 +104,7 @@ export function ApartmentsView({ apartments, leases, payments, currency }: Apart
         onClose={() => setApartmentModal({ open: false, apartment: null })}
         onSave={handleSaveApartment}
         apartment={apartmentModal.apartment}
+        currency={currency}
       />
 
       {leaseManagementModal.apartment && (
@@ -149,6 +150,7 @@ export function ApartmentsView({ apartments, leases, payments, currency }: Apart
         onSave={handleSavePayment}
         leaseId={paymentModal.leaseId}
         apartmentName={paymentModal.apartmentName}
+        currency={currency}
       />
 
       <DeleteConfirmModal

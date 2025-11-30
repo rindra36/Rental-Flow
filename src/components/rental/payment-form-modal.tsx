@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import type { Payment } from "@/types"
+import type { Payment, Currency } from "@/types"
 import { Loader2 } from "lucide-react"
 
 interface PaymentFormModalProps {
@@ -24,9 +24,10 @@ interface PaymentFormModalProps {
   leaseId: string
   apartmentName: string
   payment?: Payment | null
+  currency: Currency
 }
 
-export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName, payment }: PaymentFormModalProps) {
+export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName, payment, currency }: PaymentFormModalProps) {
   const [amount, setAmount] = useState("")
   const [date, setDate] = useState("")
   const [isFullPayment, setIsFullPayment] = useState(false)
@@ -70,7 +71,7 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount ($)</Label>
+            <Label htmlFor="amount">Amount ({currency === 'MGA' ? 'Ar' : 'Fmg'})</Label>
             <Input
               id="amount"
               type="number"
