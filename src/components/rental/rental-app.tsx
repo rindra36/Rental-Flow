@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -124,11 +125,9 @@ export function RentalApp({ apartments, leases, payments, initialYear, initialMo
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Data Backup Reminder</AlertDialogTitle>
-            <AlertDialogDescription>
-              <pre className="mt-2 w-full whitespace-pre-wrap rounded-md bg-muted p-4 font-code text-sm">
-                {backupReminder}
-              </pre>
-            </AlertDialogDescription>
+            <pre className="mt-2 w-full whitespace-pre-wrap rounded-md bg-muted p-4 font-code text-sm text-muted-foreground">
+              {backupReminder}
+            </pre>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Close</AlertDialogCancel>
