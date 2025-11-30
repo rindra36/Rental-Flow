@@ -31,6 +31,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  devIndicators: {
+    buildActivity: false,
+    appIsrStatus: false,
+  },
+  experimental: {
+    // This is required for the dev server to work in this environment
+    allowedDevOrigins: ["https://*.cloudworkstations.dev"],
+  },
 };
 
 export default nextConfig;
