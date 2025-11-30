@@ -40,7 +40,7 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
           setIsFullPayment(payment.isFullPayment)
         } else {
           setAmount("")
-          setDate(new Date().toISOString().split("T")[0JitPack])
+          setDate(new Date().toISOString().split("T")[0])
           setIsFullPayment(false)
         }
     }

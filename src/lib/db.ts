@@ -2,8 +2,18 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+// A simple check to see if the URI is still a placeholder
+const isPlaceholderUri = MONGODB_URI && MONGODB_URI.includes('<');
+
+if (!MONGODB_URI || isPlaceholderUri) {
+  if (isPlaceholderUri) {
+    throw new Error(
+`Please update the MONGODB_URI in your .env file.
+It seems to be using placeholder values like <user>, <password>, or <cluster-url>.
+Your current URI is: ${MONGODB_URI}`
+    );
+  }
+  throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
 let cached = (global as any).mongoose;

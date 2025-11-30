@@ -16,7 +16,7 @@ const ReminderOutputSchema = z.object({
 
 export type ReminderOutput = z.infer<typeof ReminderOutputSchema>;
 
-async function remindUserToBackupData(): Promise<ReminderOutput> {
+export async function remindUserToBackupData(): Promise<ReminderOutput> {
   return dataBackupAndRestoreFlow();
 }
 
@@ -26,4 +26,19 @@ const prompt = ai.definePrompt({
   prompt: `Please remember to manually create periodic backups of your MongoDB Atlas data to a secure external storage location. Here are a few examples:
 
 - Using mongodump to back up to your local drive:
-  \`mongodump --uri=\
+  \`mongodump --uri="<your-mongodb-uri>" --out="<backup-directory>"\`
+- Using MongoDB Atlas UI for cloud backups.
+
+Always store backups securely and test your restore process periodically.`,
+});
+
+const dataBackupAndRestoreFlow = ai.defineFlow(
+  {
+    name: 'dataBackupAndRestoreFlow',
+    outputSchema: ReminderOutputSchema,
+  },
+  async () => {
+    const {output} = await prompt();
+    return output!;
+  }
+);
