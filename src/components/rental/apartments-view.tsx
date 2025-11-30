@@ -11,7 +11,7 @@ import { LeaseManagementModal } from "./lease-management-modal"
 import { PaymentFormModal } from "./payment-form-modal"
 import { DeleteConfirmModal } from "./delete-confirm-modal"
 import * as actions from "@/app/actions"
-import type { Apartment, Lease, Payment, Currency } from "@/types"
+import type { Apartment, Lease, Payment, Currency, PriceHistory } from "@/types"
 
 interface ApartmentsViewProps {
   apartments: Apartment[]
@@ -37,11 +37,17 @@ export function ApartmentsView({ apartments, leases, payments, currency }: Apart
     })
   }
 
-  const handleSaveApartment = async (data: { name: string; price: number }) => {
-    handleAction(() => apartmentModal.apartment
-      ? actions.updateApartment(apartmentModal.apartment.id, data)
-      : actions.createApartment(data)
-    )
+  const handleSaveApartment = async (data: { name: string; price: number } | { name: string; priceHistory: Omit<PriceHistory, 'id'>[] }) => {
+    handleAction(() => {
+        if (apartmentModal.apartment && 'priceHistory' in data) {
+            return actions.updateApartment(apartmentModal.apartment.id, { name: data.name, priceHistory: data.priceHistory });
+        }
+        if ('price' in data) {
+             return actions.createApartment(data);
+        }
+        // Fallback, though this case should not be hit with the new form logic.
+        return Promise.resolve();
+    });
   }
 
   const handleSaveLease = async (data: Omit<Lease, "id">) => {
@@ -161,7 +167,9 @@ export function ApartmentsView({ apartments, leases, payments, currency }: Apart
         description={
           deleteModal.type === "apartment"
             ? `This will permanently delete "${deleteModal.name}" and all associated leases and payments.`
-            : `This will permanently delete ${deleteModal.name} and all associated payments.`
+            : deleteModal.type === 'lease'
+            ? `This will permanently delete ${deleteModal.name}.`
+            : `This will permanently delete ${deleteModal.name}.`
         }
       />
     </div>

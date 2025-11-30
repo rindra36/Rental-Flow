@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { formatDate, formatCurrency } from "@/lib/rental-utils"
+import { formatDate, formatCurrency, getPriceForMonth } from "@/lib/rental-utils"
 import type { Apartment, Lease, Payment, Currency } from "@/types"
 import { Separator } from "@/components/ui/separator"
 
@@ -56,12 +56,16 @@ export function LeaseManagementModal({
     return payments.filter((p) => p.leaseId === leaseId).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }
 
+  const today = new Date();
+  const currentRent = getPriceForMonth(apartment.priceHistory, today.getFullYear(), today.getMonth());
+
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Manage Leases for {apartment.name}</DialogTitle>
-          <DialogDescription>Base rent: {formatCurrency(apartment.price, currency)}/month</DialogDescription>
+          <DialogDescription>Current rent: {formatCurrency(currentRent, currency)}/month</DialogDescription>
         </DialogHeader>
 
         <div className="flex justify-end items-center -mt-4">

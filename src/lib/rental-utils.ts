@@ -1,9 +1,9 @@
-import type { Apartment, Lease, Payment, ApartmentStatusInfo, ApartmentStatus, Currency } from "@/types"
+import type { Apartment, Lease, Payment, ApartmentStatusInfo, ApartmentStatus, Currency, PriceHistory } from "@/types"
 
 // Check if a lease is active during a specific month
 export function isLeaseActiveInMonth(lease: Lease, year: number, month: number): boolean {
-  const monthStart = new Date(year, month, 1)
-  const monthEnd = new Date(year, month + 1, 0) // Last day of the month
+  const monthStart = new Date(Date.UTC(year, month, 1))
+  const monthEnd = new Date(Date.UTC(year, month + 1, 0)) // Last day of the month
 
   // Use UTC to avoid timezone issues during parsing
   const leaseStart = new Date(lease.startDate + 'T00:00:00Z');
@@ -23,6 +23,16 @@ export function getPaymentsInMonth(payments: Payment[], year: number, month: num
   })
 }
 
+// Get the effective price for an apartment for a given month
+export function getPriceForMonth(priceHistory: PriceHistory[], year: number, month: number): number {
+    const monthStart = new Date(Date.UTC(year, month, 1));
+    const sortedHistory = [...priceHistory].sort((a, b) => new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime());
+    
+    const effectivePrice = sortedHistory.find(p => new Date(p.effectiveDate + 'T00:00:00Z') <= monthStart);
+
+    return effectivePrice ? effectivePrice.price : (sortedHistory.length > 0 ? sortedHistory[sortedHistory.length - 1].price : 0);
+}
+
 // Calculate apartment status for a month
 export function calculateApartmentStatus(
   apartment: Apartment,
@@ -35,6 +45,8 @@ export function calculateApartmentStatus(
   const activeLease = leases.find(
     (lease) => lease.apartmentId === apartment.id && isLeaseActiveInMonth(lease, year, month),
   )
+  
+  const rentForMonth = getPriceForMonth(apartment.priceHistory, year, month);
 
   if (!activeLease) {
     return {
@@ -43,6 +55,7 @@ export function calculateApartmentStatus(
       payments: [],
       totalPaid: 0,
       deficit: 0,
+      rentForMonth,
     }
   }
 
@@ -53,7 +66,7 @@ export function calculateApartmentStatus(
 
   const totalPaid = leasePayments.reduce((sum, p) => sum + p.amount, 0)
   const hasFullPayment = leasePayments.some((p) => p.isFullPayment)
-  const isPaid = hasFullPayment || totalPaid >= apartment.price
+  const isPaid = hasFullPayment || totalPaid >= rentForMonth;
 
   const status: ApartmentStatus = isPaid ? "paid" : "deficit"
 
@@ -63,7 +76,8 @@ export function calculateApartmentStatus(
     lease: activeLease,
     payments: leasePayments,
     totalPaid,
-    deficit: Math.max(0, apartment.price - totalPaid),
+    deficit: Math.max(0, rentForMonth - totalPaid),
+    rentForMonth,
   }
 }
 
@@ -77,11 +91,11 @@ export function calculateDashboardSummary(
 ) {
   const statuses = apartments.map((apt) => calculateApartmentStatus(apt, leases, payments, year, month))
 
-  const expectedIncome = statuses.filter((s) => s.status !== "vacant").reduce((sum, s) => sum + s.apartment.price, 0)
+  const expectedIncome = statuses.filter((s) => s.status !== "vacant").reduce((sum, s) => sum + s.rentForMonth, 0)
 
   const collected = statuses.reduce((sum, s) => sum + s.totalPaid, 0)
 
-  const missing = expectedIncome - collected
+  const missing = statuses.filter(s => s.status === 'deficit').reduce((sum, s) => sum + s.deficit, 0);
 
   return {
     statuses,
@@ -101,7 +115,7 @@ export function formatCurrency(amount: number, currency: Currency = 'MGA'): stri
   
   if (currency === 'MGA') {
     // Consistent formatting for MGA (Ariary)
-    return `Ar ${displayAmount.toLocaleString('fr-MG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `Ar ${displayAmount.toLocaleString('fr-MG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   } 
   
   // Consistent formatting for Fmg

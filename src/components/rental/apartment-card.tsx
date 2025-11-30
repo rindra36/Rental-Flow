@@ -1,10 +1,10 @@
 "use client"
 
-import { Pencil, Trash2, FileText } from "lucide-react"
+import { Pencil, Trash2, FileText, TrendingUp } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { formatCurrency, formatDate } from "@/lib/rental-utils"
+import { formatCurrency, formatDate, getPriceForMonth } from "@/lib/rental-utils"
 import type { Apartment, Lease, Currency } from "@/types"
 
 interface ApartmentCardProps {
@@ -19,6 +19,11 @@ interface ApartmentCardProps {
 export function ApartmentCard({ apartment, leases, onEdit, onDelete, onManageLeases, currency }: ApartmentCardProps) {
   const apartmentLeases = leases.filter((l) => l.apartmentId === apartment.id)
   const activeLeases = apartmentLeases.filter((l) => new Date(l.endDate) >= new Date())
+  
+  const today = new Date();
+  const currentPrice = getPriceForMonth(apartment.priceHistory, today.getFullYear(), today.getMonth());
+  const hasPriceIncreased = apartment.priceHistory.length > 1 && apartment.priceHistory[0].price > apartment.priceHistory[1].price;
+
 
   return (
     <Card>
@@ -26,7 +31,12 @@ export function ApartmentCard({ apartment, leases, onEdit, onDelete, onManageLea
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-lg font-headline">{apartment.name}</CardTitle>
-            <p className="text-2xl font-bold mt-1">{formatCurrency(apartment.price, currency)}/mo</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-2xl font-bold">{formatCurrency(currentPrice, currency)}/mo</p>
+              {apartment.priceHistory.length > 1 && (
+                <TrendingUp size={18} className={hasPriceIncreased ? "text-emerald-500" : "text-destructive rotate-90"} />
+              )}
+            </div>
           </div>
           <div className="flex gap-1">
             <Button variant="ghost" size="icon" onClick={onEdit}>

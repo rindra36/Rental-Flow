@@ -43,7 +43,7 @@ export function StatusList({ statuses, onAddPayment, onAddLease, currency }: Sta
                   <h3 className="font-semibold">{info.apartment.name}</h3>
                   {getStatusBadge(info.status)}
                 </div>
-                <p className="text-sm text-muted-foreground">Base rent: {formatCurrency(info.apartment.price, currency)}</p>
+                <p className="text-sm text-muted-foreground">Rent: {formatCurrency(info.rentForMonth, currency)}</p>
                 {info.lease && (
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
                     {info.lease.tenantName && (

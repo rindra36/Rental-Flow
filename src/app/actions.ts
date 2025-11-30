@@ -4,14 +4,14 @@
 import { revalidatePath } from 'next/cache'
 // import dbConnect from '@/lib/db'
 // import { Apartment, Lease, Payment } from '@/lib/models'
-import type { Apartment as ApartmentType, Lease as LeaseType, Payment as PaymentType } from '@/types'
+import type { Apartment as ApartmentType, Lease as LeaseType, Payment as PaymentType, PriceHistory } from '@/types'
 
 // --- Mock Data ---
 let mockApartments: ApartmentType[] = [
-  { id: '1', name: 'Apt 1A', price: 1200 },
-  { id: '2', name: 'Apt 2B', price: 1550 },
-  { id: '3', name: 'Studio 3C', price: 950 },
-  { id: '4', name: 'Penthouse', price: 3500 },
+  { id: '1', name: 'Apt 1A', priceHistory: [{ id: 'ph1', price: 1200, effectiveDate: '2024-01-01' }] },
+  { id: '2', name: 'Apt 2B', priceHistory: [{ id: 'ph2', price: 1550, effectiveDate: '2024-01-01' }] },
+  { id: '3', name: 'Studio 3C', priceHistory: [{ id: 'ph3', price: 950, effectiveDate: '2024-01-01' }] },
+  { id: '4', name: 'Penthouse', priceHistory: [{ id: 'ph4', price: 3500, effectiveDate: '2024-01-01' }] },
 ];
 let mockLeases: LeaseType[] = [
     { id: '101', apartmentId: '1', tenantName: 'Alice Johnson', startDate: '2024-01-01', endDate: '2024-12-31' },
@@ -28,6 +28,7 @@ let mockPayments: PaymentType[] = [
 let nextId = 5;
 let nextLeaseId = 104;
 let nextPaymentId = 1006;
+let nextPriceHistoryId = 5;
 // --- End Mock Data ---
 
 
@@ -45,16 +46,30 @@ export async function getRentalData() {
   };
 }
 
-export async function createApartment(data: Omit<ApartmentType, 'id'>) {
+export async function createApartment(data: Omit<ApartmentType, 'id' | 'priceHistory'> & { price: number }) {
     // MOCK IMPLEMENTATION
-    const newApartment: ApartmentType = { id: String(nextId++), ...data };
+    const newApartment: ApartmentType = {
+        id: String(nextId++),
+        name: data.name,
+        priceHistory: [{
+            id: `ph${nextPriceHistoryId++}`,
+            price: data.price,
+            effectiveDate: new Date().toISOString().split('T')[0]
+        }]
+    };
     mockApartments.push(newApartment);
     revalidatePath('/');
 }
 
-export async function updateApartment(id: string, data: Partial<Omit<ApartmentType, 'id'>>) {
+export async function updateApartment(id: string, data: { name: string, priceHistory: Omit<PriceHistory, 'id'>[] }) {
     // MOCK IMPLEMENTATION
-    mockApartments = mockApartments.map(apt => apt.id === id ? { ...apt, ...data } : apt);
+    mockApartments = mockApartments.map(apt => {
+        if (apt.id === id) {
+            const newPriceHistory = data.priceHistory.map(ph => ({ ...ph, id: `ph${nextPriceHistoryId++}` }));
+            return { ...apt, name: data.name, priceHistory: newPriceHistory };
+        }
+        return apt;
+    });
     revalidatePath('/');
 }
 
@@ -87,7 +102,7 @@ export async function deleteLease(id: string) {
     // MOCK IMPLEMENTATION
     mockPayments = mockPayments.filter(p => p.leaseId !== id);
     mockLeases = mockLeases.filter(l => l.id !== id);
-    revalidatePath('/');
+revalidatePath('/');
 }
 
 export async function createPayment(data: Omit<PaymentType, 'id'>) {

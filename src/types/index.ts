@@ -1,7 +1,13 @@
+export interface PriceHistory {
+  id: string;
+  price: number;
+  effectiveDate: string; // ISO Date
+}
+
 export interface Apartment {
   id: string
   name: string // e.g., "Apt 4B"
-  price: number // Monthly base rent
+  priceHistory: PriceHistory[];
 }
 
 export interface Lease {
@@ -29,6 +35,7 @@ export interface ApartmentStatusInfo {
   payments: Payment[]
   totalPaid: number
   deficit: number
+  rentForMonth: number;
 }
 
 export type Currency = 'MGA' | 'Fmg';

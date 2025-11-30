@@ -6,50 +6,74 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { Apartment, Currency } from "@/types"
-import { Loader2 } from "lucide-react"
+import type { Apartment, Currency, PriceHistory } from "@/types"
+import { Loader2, Plus, Trash2 } from "lucide-react"
+
+type PriceHistoryEntry = Omit<PriceHistory, "id"> & { id?: string };
 
 interface ApartmentFormModalProps {
   open: boolean
   onClose: () => void
-  onSave: (data: { name: string; price: number }) => Promise<void>
+  onSave: (data: { name: string; price: number } | { name: string; priceHistory: Omit<PriceHistory, 'id'>[] }) => Promise<void>
   apartment?: Apartment | null
   currency: Currency
 }
 
 export function ApartmentFormModal({ open, onClose, onSave, apartment, currency }: ApartmentFormModalProps) {
   const [name, setName] = useState("")
-  const [price, setPrice] = useState("")
+  const [priceHistory, setPriceHistory] = useState<PriceHistoryEntry[]>([])
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (open) {
       if (apartment) {
         setName(apartment.name)
-        setPrice(apartment.price.toString())
+        setPriceHistory([...apartment.priceHistory].sort((a,b) => new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime()))
       } else {
         setName("")
-        setPrice("")
+        const today = new Date().toISOString().split('T')[0];
+        setPriceHistory([{ price: 0, effectiveDate: today }])
       }
     }
   }, [apartment, open])
 
+  const handlePriceHistoryChange = (index: number, field: keyof PriceHistoryEntry, value: string | number) => {
+    const newHistory = [...priceHistory];
+    (newHistory[index] as any)[field] = value;
+    setPriceHistory(newHistory);
+  }
+
+  const addPriceEntry = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setPriceHistory([...priceHistory, { price: 0, effectiveDate: today }]);
+  }
+
+  const removePriceEntry = (index: number) => {
+    if (priceHistory.length > 1) {
+      const newHistory = priceHistory.filter((_, i) => i !== index);
+      setPriceHistory(newHistory);
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim() || !price) return
+    if (!name.trim()) return
+
+    const sanitizedHistory = priceHistory.map(({id, ...rest}) => rest);
 
     startTransition(async () => {
-        await onSave({
-          name: name.trim(),
-          price: Number.parseFloat(price),
-        })
+        if (apartment) {
+            await onSave({ name: name.trim(), priceHistory: sanitizedHistory })
+        } else {
+            await onSave({ name: name.trim(), price: priceHistory[0].price })
+        }
         onClose()
     });
   }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{apartment ? "Edit Apartment" : "Add New Apartment"}</DialogTitle>
         </DialogHeader>
@@ -65,20 +89,57 @@ export function ApartmentFormModal({ open, onClose, onSave, apartment, currency 
               disabled={isPending}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="price">Monthly Rent ({currency === 'MGA' ? 'Ar' : 'Fmg'})</Label>
-            <Input
-              id="price"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="e.g., 1500"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-              disabled={isPending}
-            />
+          
+          <div className="space-y-3">
+            <Label>{apartment ? "Price History" : "Monthly Rent"}</Label>
+            {priceHistory.map((entry, index) => (
+                <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
+                    <div>
+                        <Label htmlFor={`price-${index}`} className="text-xs text-muted-foreground">Amount ({currency === 'MGA' ? 'Ar' : 'Fmg'})</Label>
+                        <Input
+                            id={`price-${index}`}
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="e.g., 1500"
+                            value={entry.price}
+                            onChange={(e) => handlePriceHistoryChange(index, "price", parseFloat(e.target.value) || 0)}
+                            required
+                            disabled={isPending}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor={`date-${index}`} className="text-xs text-muted-foreground">Effective Date</Label>
+                         <Input
+                            id={`date-${index}`}
+                            type="date"
+                            value={entry.effectiveDate}
+                            onChange={(e) => handlePriceHistoryChange(index, "effectiveDate", e.target.value)}
+                            required
+                            disabled={isPending || (!apartment && index > 0)}
+                         />
+                    </div>
+                     <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removePriceEntry(index)}
+                        disabled={isPending || priceHistory.length <= 1}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        aria-label="Remove price entry"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+            ))}
+            {apartment && (
+                <Button type="button" variant="outline" size="sm" onClick={addPriceEntry} disabled={isPending}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Price Change
+                </Button>
+            )}
           </div>
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
               Cancel
