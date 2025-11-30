@@ -1,13 +1,24 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
+// Price History Subdocument
+export interface IPriceHistory extends Document {
+    price: number;
+    effectiveDate: Date;
+}
+const priceHistorySchema = new Schema<IPriceHistory>({
+    price: { type: Number, required: true },
+    effectiveDate: { type: Date, required: true },
+});
+
+
 // Apartment
 export interface IApartment extends Document {
     name: string;
-    price: number;
+    priceHistory: IPriceHistory[];
 }
 const apartmentSchema = new Schema<IApartment>({
     name: { type: String, required: true },
-    price: { type: Number, required: true },
+    priceHistory: [priceHistorySchema],
 }, { timestamps: true });
 
 // Lease

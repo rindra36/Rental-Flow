@@ -2,118 +2,104 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-// import dbConnect from '@/lib/db'
-// import { Apartment, Lease, Payment } from '@/lib/models'
+import dbConnect from '@/lib/db'
+import { Apartment, Lease, Payment } from '@/lib/models'
 import type { Apartment as ApartmentType, Lease as LeaseType, Payment as PaymentType, PriceHistory } from '@/types'
 
-// --- Mock Data ---
-let mockApartments: ApartmentType[] = [
-  { id: '1', name: 'Apt 1A', priceHistory: [{ id: 'ph1', price: 1200, effectiveDate: '2024-01-01' }] },
-  { id: '2', name: 'Apt 2B', priceHistory: [{ id: 'ph2', price: 1550, effectiveDate: '2024-01-01' }] },
-  { id: '3', name: 'Studio 3C', priceHistory: [{ id: 'ph3', price: 950, effectiveDate: '2024-01-01' }] },
-  { id: '4', name: 'Penthouse', priceHistory: [{ id: 'ph4', price: 3500, effectiveDate: '2024-01-01' }] },
-];
-let mockLeases: LeaseType[] = [
-    { id: '101', apartmentId: '1', tenantName: 'Alice Johnson', startDate: '2024-01-01', endDate: '2024-12-31' },
-    { id: '102', apartmentId: '2', tenantName: 'Bob Williams', startDate: '2023-06-01', endDate: '2024-05-31' },
-    { id: '103', apartmentId: '4', tenantName: 'Charles Davis', startDate: '2024-03-01', endDate: '2025-02-28' },
-];
-let mockPayments: PaymentType[] = [
-    { id: '1001', leaseId: '101', amount: 1200, date: '2024-07-01', isFullPayment: true },
-    { id: '1002', leaseId: '102', amount: 1550, date: '2024-04-01', isFullPayment: true },
-    { id: '1003', leaseId: '103', amount: 3500, date: '2024-07-03', isFullPayment: true },
-    { id: '1004', leaseId: '101', amount: 1200, date: '2024-06-01', isFullPayment: true },
-    { id: '1005', leaseId: '101', amount: 1200, date: '2024-05-01', isFullPayment: true },
-];
-let nextId = 5;
-let nextLeaseId = 104;
-let nextPaymentId = 1006;
-let nextPriceHistoryId = 5;
-// --- End Mock Data ---
-
-
-// Helper to serialize data correctly
+// Helper to serialize Mongoose documents, converting ObjectId to string for the 'id' field.
 function serialize(data: any) {
-  return JSON.parse(JSON.stringify(data));
+  const anies = Array.isArray(data) ? data : [data];
+  const objects = anies.map(item => {
+    const obj = item.toObject ? item.toObject({getters: true, versionKey: false}) : item;
+    obj.id = obj._id?.toString();
+    delete obj._id;
+    // Also serialize nested objects like priceHistory
+    if (obj.priceHistory && Array.isArray(obj.priceHistory)) {
+        obj.priceHistory = obj.priceHistory.map(ph => {
+            const phObj = ph.toObject ? ph.toObject({getters: true, versionKey: false}) : ph;
+            phObj.id = phObj._id?.toString();
+            delete phObj._id;
+            return phObj;
+        });
+    }
+    return obj;
+  })
+  return Array.isArray(data) ? objects : objects[0];
 }
 
 export async function getRentalData() {
-  // MOCK IMPLEMENTATION
+  await dbConnect()
+  const apartments = await Apartment.find({}).sort({ name: 1 })
+  const leases = await Lease.find({})
+  const payments = await Payment.find({})
+  
   return {
-    apartments: serialize(mockApartments),
-    leases: serialize(mockLeases),
-    payments: serialize(mockPayments),
+    apartments: serialize(apartments),
+    leases: serialize(leases),
+    payments: serialize(payments),
   };
 }
 
 export async function createApartment(data: Omit<ApartmentType, 'id' | 'priceHistory'> & { price: number }) {
-    // MOCK IMPLEMENTATION
-    const newApartment: ApartmentType = {
-        id: String(nextId++),
+    await dbConnect();
+    const newApartment = new Apartment({
         name: data.name,
         priceHistory: [{
-            id: `ph${nextPriceHistoryId++}`,
             price: data.price,
             effectiveDate: new Date().toISOString().split('T')[0]
         }]
-    };
-    mockApartments.push(newApartment);
+    });
+    await newApartment.save();
     revalidatePath('/');
 }
 
 export async function updateApartment(id: string, data: { name: string, priceHistory: Omit<PriceHistory, 'id'>[] }) {
-    // MOCK IMPLEMENTATION
-    mockApartments = mockApartments.map(apt => {
-        if (apt.id === id) {
-            const newPriceHistory = data.priceHistory.map(ph => ({ ...ph, id: `ph${nextPriceHistoryId++}` }));
-            return { ...apt, name: data.name, priceHistory: newPriceHistory };
-        }
-        return apt;
-    });
+    await dbConnect();
+    await Apartment.findByIdAndUpdate(id, { name: data.name, priceHistory: data.priceHistory });
     revalidatePath('/');
 }
 
 export async function deleteApartment(id: string) {
-    // MOCK IMPLEMENTATION
-    const leasesToDelete = mockLeases.filter(l => l.apartmentId === id);
-    const leaseIdsToDelete = leasesToDelete.map(l => l.id);
+    await dbConnect();
+    const leasesToDelete = await Lease.find({ apartmentId: id });
+    const leaseIdsToDelete = leasesToDelete.map(l => l._id);
     
-    mockPayments = mockPayments.filter(p => !leaseIdsToDelete.includes(p.leaseId));
-    mockLeases = mockLeases.filter(l => l.apartmentId !== id);
-    mockApartments = mockApartments.filter(apt => apt.id !== id);
+    await Payment.deleteMany({ leaseId: { $in: leaseIdsToDelete } });
+    await Lease.deleteMany({ apartmentId: id });
+    await Apartment.findByIdAndDelete(id);
 
     revalidatePath('/');
 }
 
 export async function createLease(data: Omit<LeaseType, 'id'>) {
-    // MOCK IMPLEMENTATION
-    const newLease: LeaseType = { id: String(nextLeaseId++), ...data };
-    mockLeases.push(newLease);
+    await dbConnect();
+    const newLease = new Lease(data);
+    await newLease.save();
     revalidatePath('/');
 }
 
 export async function updateLease(id: string, data: Partial<Omit<LeaseType, 'id'>>) {
-    // MOCK IMPLEMENTATION
-    mockLeases = mockLeases.map(l => l.id === id ? { ...l, ...data } : l);
+    await dbConnect();
+    await Lease.findByIdAndUpdate(id, data);
     revalidatePath('/');
 }
 
 export async function deleteLease(id: string) {
-    // MOCK IMPLEMENTATION
-    mockPayments = mockPayments.filter(p => p.leaseId !== id);
-    mockLeases = mockLeases.filter(l => l.id !== id);
-revalidatePath('/');
+    await dbConnect();
+    await Payment.deleteMany({ leaseId: id });
+    await Lease.findByIdAndDelete(id);
+    revalidatePath('/');
 }
 
 export async function createPayment(data: Omit<PaymentType, 'id'>) {
-    // MOCK IMPLEMENTATION
-    const newPayment: PaymentType = { id: String(nextPaymentId++), ...data };
-    mockPayments.push(newPayment);
+    await dbConnect();
+    const newPayment = new Payment(data);
+    await newPayment.save();
     revalidatePath('/');
 }
 
 export async function deletePayment(id: string) {
-    // MOCK IMPLEMENTATION
-    mockPayments = mockPayments.filter(p => p.id !== id);
+    await dbConnect();
+    await Payment.findByIdAndDelete(id);
     revalidatePath('/');
 }
