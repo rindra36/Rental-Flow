@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getMonthName } from "@/lib/rental-utils"
@@ -11,6 +12,8 @@ interface MonthPickerProps {
 }
 
 export function MonthPicker({ year, month, onChange }: MonthPickerProps) {
+  const [isDisabled, setIsDisabled] = useState(true);
+
   const goToPreviousMonth = () => {
     if (month === 0) {
       onChange(year - 1, 11)
@@ -32,10 +35,11 @@ export function MonthPicker({ year, month, onChange }: MonthPickerProps) {
     onChange(today.getFullYear(), today.getMonth())
   }
   
-  const isCurrentMonth = () => {
+  useEffect(() => {
     const today = new Date();
-    return today.getFullYear() === year && today.getMonth() === month;
-  }
+    setIsDisabled(today.getFullYear() === year && today.getMonth() === month);
+  }, [year, month]);
+
 
   return (
     <div className="flex items-center gap-1 sm:gap-2">
@@ -54,7 +58,7 @@ export function MonthPicker({ year, month, onChange }: MonthPickerProps) {
         <ChevronRight className="h-4 w-4" />
       </Button>
 
-      <Button variant="ghost" size="sm" onClick={goToToday} className="ml-2" disabled={isCurrentMonth()}>
+      <Button variant="ghost" size="sm" onClick={goToToday} className="ml-2" disabled={isDisabled}>
         Today
       </Button>
     </div>

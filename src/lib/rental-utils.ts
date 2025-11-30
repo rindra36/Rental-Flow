@@ -98,23 +98,16 @@ export function calculateDashboardSummary(
 // Format currency
 export function formatCurrency(amount: number, currency: Currency = 'MGA'): string {
   const displayAmount = currency === 'Fmg' ? amount * 5 : amount;
-  const options: Intl.NumberFormatOptions = {
-    style: 'currency',
-    currency,
-    currencyDisplay: 'code',
-  };
-
+  
   if (currency === 'MGA') {
-    options.currency = 'MGA';
-  } else {
-    // Fmg is not a standard ISO currency code, so we format it manually
-    return `Fmg ${displayAmount.toLocaleString('fr-MG')}`;
-  }
-
-  return new Intl.NumberFormat("fr-MG", options)
-    .format(displayAmount)
-    .replace('MGA', 'Ar');
+    // Consistent formatting for MGA (Ariary)
+    return `Ar ${displayAmount.toLocaleString('fr-MG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  } 
+  
+  // Consistent formatting for Fmg
+  return `Fmg ${displayAmount.toLocaleString('fr-MG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
+
 
 // Format date
 export function formatDate(dateString: string): string {
@@ -130,5 +123,5 @@ export function formatDate(dateString: string): string {
 
 // Get month name
 export function getMonthName(month: number): string {
-  return new Date(Date.UTC(2025, month, 1)).toLocaleDateString("en-US", { month: "long", timeZone: "UTC" })
+  return new Date(Date.UTC(2025, month, 1)).toLocaleString("en-US", { month: "long", timeZone: "UTC" })
 }
