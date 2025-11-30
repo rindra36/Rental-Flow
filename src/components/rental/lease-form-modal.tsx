@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { Lease } from "@/types"
 import { Loader2 } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface LeaseFormModalProps {
   open: boolean
@@ -23,24 +24,43 @@ export function LeaseFormModal({ open, onClose, onSave, apartmentId, apartmentNa
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
   const [tenantName, setTenantName] = useState("")
+  const [isStillRenting, setIsStillRenting] = useState(false)
   const [isPending, startTransition] = useTransition();
+
+  const farFutureDate = "9999-12-31";
 
   useEffect(() => {
     if (open) {
       if (lease) {
         setStartDate(lease.startDate.split('T')[0])
-        setEndDate(lease.endDate.split('T')[0])
+        const isOngoing = lease.endDate === farFutureDate;
+        setIsStillRenting(isOngoing);
+        setEndDate(isOngoing ? farFutureDate : lease.endDate.split('T')[0]);
         setTenantName(lease.tenantName || "")
       } else {
         const today = new Date()
-        const start = new Date(today.getFullYear(), today.getMonth(), 1)
-        const end = new Date(start.getFullYear() + 1, start.getMonth(), 0)
+        const start = new Date(Date.UTC(today.getFullYear(), today.getMonth(), 1))
+        const end = new Date(Date.UTC(start.getFullYear() + 1, start.getMonth(), 0))
         setStartDate(start.toISOString().split("T")[0])
         setEndDate(end.toISOString().split("T")[0])
         setTenantName("")
+        setIsStillRenting(false)
       }
     }
   }, [lease, open])
+
+  useEffect(() => {
+    if (isStillRenting) {
+      setEndDate(farFutureDate)
+    } else {
+      // If user unchecks, and it was a far future date, revert to something reasonable.
+      if (endDate === farFutureDate) {
+          const start = new Date(startDate);
+          const end = new Date(Date.UTC(start.getUTCFullYear() + 1, start.getUTCMonth(), start.getUTCDate()-1));
+          setEndDate(end.toISOString().split("T")[0]);
+      }
+    }
+  }, [isStillRenting, startDate]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -89,7 +109,23 @@ export function LeaseFormModal({ open, onClose, onSave, apartmentId, apartmentNa
             </div>
             <div className="space-y-2">
               <Label htmlFor="endDate">End Date</Label>
-              <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required disabled={isPending} />
+              <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required disabled={isPending || isStillRenting} />
+            </div>
+          </div>
+           <div className="items-top flex space-x-2">
+            <Checkbox
+              id="isStillRenting"
+              checked={isStillRenting}
+              onCheckedChange={(checked) => setIsStillRenting(checked === true)}
+              disabled={isPending}
+            />
+            <div className="grid gap-1.5 leading-none">
+                <Label htmlFor="isStillRenting" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Tenant is currently renting
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                    Select for an ongoing lease without a fixed end date.
+                </p>
             </div>
           </div>
           <DialogFooter>

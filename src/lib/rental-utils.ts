@@ -3,11 +3,12 @@ import type { Apartment, Lease, Payment, ApartmentStatusInfo, ApartmentStatus, C
 // Check if a lease is active during a specific month
 export function isLeaseActiveInMonth(lease: Lease, year: number, month: number): boolean {
   const monthStart = new Date(Date.UTC(year, month, 1))
-  const monthEnd = new Date(Date.UTC(year, month + 1, 0)) // Last day of the month
+  const monthEnd = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999)) // Last moment of the month
 
   // Use UTC to avoid timezone issues during parsing
   const leaseStart = new Date(lease.startDate + 'T00:00:00Z');
   const leaseEnd = new Date(lease.endDate + 'T00:00:00Z');
+  leaseEnd.setUTCHours(23, 59, 59, 999);
 
 
   // Lease overlaps with month if it starts before month ends AND ends after month starts
@@ -125,6 +126,9 @@ export function formatCurrency(amount: number, currency: Currency = 'MGA'): stri
 
 // Format date
 export function formatDate(dateString: string): string {
+  if (dateString === "9999-12-31") {
+    return "Present";
+  }
   // Add a time to the date string to avoid timezone issues where it might be interpreted as the previous day
   const date = new Date(dateString + 'T00:00:00Z');
   return date.toLocaleDateString("en-US", {
