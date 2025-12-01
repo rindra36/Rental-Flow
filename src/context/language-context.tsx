@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
@@ -11,21 +12,34 @@ const translations = { en, fr };
 // A simple template replacement function
 const simpleTemplate = (str: string, data: Record<string, any> = {}) => {
   if (!str) return '';
-  return str.replace(/\{(\w+)\}/g, (match, key) => {
-    // Basic pluralization for {count}
-    if (key === 'count' && 'count' in data) {
-      const count = data.count;
-      const pluralMatch = str.match(/\{count, plural, .*?one {(.*?)}(.*?)other {(.*?)}}/);
-      if (pluralMatch) {
-         if (count === 1) {
-            return pluralMatch[1];
-         }
-         return pluralMatch[3].replace('#', String(count));
+  // Improved pluralization handling for {count, plural, ...}
+  return str.replace(/\{(\w+)(, plural, (.*?))?\}/g, (match, key, plural, pluralOptions) => {
+    if (data.hasOwnProperty(key)) {
+      const value = data[key];
+      if (plural && pluralOptions) {
+        try {
+            // Very basic ICU-like plural parsing
+            const oneMatch = pluralOptions.match(/one {(.*?)}/);
+            const otherMatch = pluralOptions.match(/other {(.*?)}/);
+            
+            if (value === 1 && oneMatch) {
+              return oneMatch[1];
+            }
+            if (otherMatch) {
+              return otherMatch[1].replace('#', String(value));
+            }
+        } catch (e) {
+            // fallback to just showing the value
+             return String(value);
+        }
       }
+      return String(value);
     }
-    return data.hasOwnProperty(key) ? String(data[key]) : match;
+    // Fallback if the key is not in data to avoid showing "{key}"
+    return match;
   });
 };
+
 
 type TranslateFunction = (key: keyof typeof en, values?: Record<string, string | number>) => string;
 
@@ -62,7 +76,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       const fallbackDict = translations.en as Record<string, string>;
       let text = langDict[key] || fallbackDict[key] || key;
       
-      // Handle simple ICU-like pluralization if values are provided
       if (values) {
         text = simpleTemplate(text, values);
       }
