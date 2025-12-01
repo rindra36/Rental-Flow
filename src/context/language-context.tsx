@@ -12,30 +12,37 @@ const translations = { en, fr };
 // A simple template replacement function
 const simpleTemplate = (str: string, data: Record<string, any> = {}) => {
   if (!str) return '';
-  
-  // Improved pluralization handling for {count, plural, ...}
-  return str.replace(/\{(\w+), plural, (.*?)\}/g, (match, key, pluralOptions) => {
+
+  let result = str;
+
+  // Handle pluralization: {count, plural, =0{...} one{...} other{...}}
+  result = result.replace(/\{(\w+),\s*plural,\s*(.*?)\}/g, (match, key, pluralOptions) => {
     if (data.hasOwnProperty(key)) {
       const value = data[key];
-      try {
-        // Very basic ICU-like plural parsing
-        const oneMatch = pluralOptions.match(/one {(.*?)}/);
-        const otherMatch = pluralOptions.match(/other {(.*?)}/);
-        
-        if (value === 1 && oneMatch) {
-          return oneMatch[1].replace('#', String(value));
-        }
-        if (otherMatch) {
-          return otherMatch[1].replace('#', String(value));
-        }
-      } catch (e) {
-        // fallback to just showing the value
-        return String(value);
+      
+      const zeroMatch = pluralOptions.match(/=\s*0\s*\{(.*?)\}/);
+      const oneMatch = pluralOptions.match(/one\s*\{(.*?)\}/);
+      const otherMatch = pluralOptions.match(/other\s*\{(.*?)\}/);
+
+      if (value === 0 && zeroMatch) {
+        return zeroMatch[1].replace('#', String(value));
+      }
+      if (value === 1 && oneMatch) {
+        return oneMatch[1].replace('#', String(value));
+      }
+      if (otherMatch) {
+        return otherMatch[1].replace(/#|{count}/g, String(value));
       }
     }
-    // Fallback if the key is not in data to avoid showing "{key}"
-    return match;
+    return match; // Return original match if key not found or no plural rule matches
   });
+
+  // Handle simple variable replacement: {variable}
+  result = result.replace(/\{(\w+)\}/g, (match, key) => {
+    return data.hasOwnProperty(key) ? data[key] : match;
+  });
+
+  return result;
 };
 
 
