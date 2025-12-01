@@ -64,7 +64,7 @@ function RentalAppContent({ apartments, leases, payments, initialYear, initialMo
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary rounded-lg">
                 <Building2 className="h-6 w-6 text-primary-foreground" />
@@ -74,7 +74,7 @@ function RentalAppContent({ apartments, leases, payments, initialYear, initialMo
                 <p className="text-sm text-muted-foreground">{t('app_subtitle')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 justify-between sm:justify-end w-full sm:w-auto">
               <Select value={currency} onValueChange={(value) => setCurrency(value as Currency)}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue placeholder={t('currency_placeholder')} />
@@ -101,8 +101,8 @@ function RentalAppContent({ apartments, leases, payments, initialYear, initialMo
                   </DropdownMenuContent>
                 </DropdownMenu>
               <Button variant="outline" onClick={handleBackupClick}>
-                <ShieldCheck className="mr-2 h-4 w-4" />
-                {t('data_backup')}
+                <ShieldCheck className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t('data_backup')}</span>
               </Button>
             </div>
           </div>
