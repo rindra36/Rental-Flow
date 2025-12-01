@@ -26,6 +26,9 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# Set a dummy MONGODB_URI to satisfy the build-time check in src/lib/db.ts
+ENV MONGODB_URI="mongodb://localhost:27017/dummy"
+
 RUN npm run build
 
 # Production image, copy all the files and run next
