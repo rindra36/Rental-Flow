@@ -31,6 +31,7 @@ const simpleTemplate = (str: string, data: Record<string, any> = {}) => {
         return oneMatch[1].replace('#', String(value));
       }
       if (otherMatch) {
+        // For 'other', replace both # and {count} as placeholders
         return otherMatch[1].replace(/#|{count}/g, String(value));
       }
     }
