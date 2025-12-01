@@ -13,36 +13,82 @@ const translations = { en, fr };
 const simpleTemplate = (str: string, data: Record<string, any> = {}) => {
   if (!str) return '';
 
-  let result = str;
+  let result = '';
+  let i = 0;
 
-  // Handle pluralization: {count, plural, =0{...} one{...} other{...}}
-  result = result.replace(/\{(\w+),\s*plural,\s*(.*?)\}/g, (match, key, pluralOptions) => {
-    if (data.hasOwnProperty(key)) {
-      const value = data[key];
-      
-      const zeroMatch = pluralOptions.match(/=\s*0\s*\{(.*?)\}/);
-      const oneMatch = pluralOptions.match(/one\s*\{(.*?)\}/);
-      const otherMatch = pluralOptions.match(/other\s*\{(.*?)\}/);
+  while (i < str.length) {
+    if (str[i] === '{') {
+      const start = i;
+      let depth = 1;
+      i++;
+      while (i < str.length && depth > 0) {
+        if (str[i] === '{') depth++;
+        else if (str[i] === '}') depth--;
+        i++;
+      }
 
-      if (value === 0 && zeroMatch) {
-        return zeroMatch[1].replace('#', String(value));
+      if (depth === 0) {
+        const block = str.substring(start + 1, i - 1);
+        const pluralMatch = block.match(/^(\w+),\s*plural,\s*([\s\S]*)$/);
+
+        if (pluralMatch) {
+            const key = pluralMatch[1];
+            const optionsStr = pluralMatch[2];
+            const value = data[key];
+            
+            if (typeof value === 'number') {
+                const options: Record<string, string> = {};
+                let p = 0;
+                while (p < optionsStr.length) {
+                     while (p < optionsStr.length && /\s/.test(optionsStr[p])) p++;
+                     if (p >= optionsStr.length) break;
+                     
+                     const kStart = p;
+                     while (p < optionsStr.length && optionsStr[p] !== '{' && !/\s/.test(optionsStr[p])) p++;
+                     const k = optionsStr.substring(kStart, p).trim();
+                     
+                     while (p < optionsStr.length && /\s/.test(optionsStr[p])) p++;
+                     
+                     if (optionsStr[p] === '{') {
+                         const bStart = p;
+                         let d = 1;
+                         p++;
+                         while (p < optionsStr.length && d > 0) {
+                             if (optionsStr[p] === '{') d++;
+                             else if (optionsStr[p] === '}') d--;
+                             p++;
+                         }
+                         if (d === 0) {
+                             options[k] = optionsStr.substring(bStart + 1, p - 1);
+                         }
+                     }
+                }
+                
+                let selectedTemplate = options['other'] || '';
+                if (options[`=${value}`]) selectedTemplate = options[`=${value}`];
+                else if (value === 1 && options['one']) selectedTemplate = options['one'];
+                
+                selectedTemplate = selectedTemplate.replace('#', String(value));
+                result += simpleTemplate(selectedTemplate, data);
+            } else {
+                result += str.substring(start, i);
+            }
+        } else {
+            const key = block.trim();
+            if (data.hasOwnProperty(key)) {
+                result += data[key];
+            } else {
+                result += str.substring(start, i);
+            }
+        }
+      } else {
+        result += str.substring(start, i);
       }
-      if (value === 1 && oneMatch) {
-        return oneMatch[1].replace('#', String(value));
-      }
-      if (otherMatch) {
-        // For 'other', replace both # and {count} as placeholders
-        return otherMatch[1].replace(/#|{count}/g, String(value));
-      }
+    } else {
+      result += str[i];
+      i++;
     }
-    return match; // Return original match if key not found or no plural rule matches
-  });
-
-  // Handle simple variable replacement: {variable}
-  result = result.replace(/\{(\w+)\}/g, (match, key) => {
-    return data.hasOwnProperty(key) ? data[key] : match;
-  });
-
+  }
   return result;
 };
 
