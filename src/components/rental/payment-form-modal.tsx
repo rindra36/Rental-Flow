@@ -26,9 +26,10 @@ interface PaymentFormModalProps {
   apartmentName: string
   payment?: Payment | null
   currency: Currency
+  rentAmount?: number
 }
 
-export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName, payment, currency }: PaymentFormModalProps) {
+export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName, payment, currency, rentAmount }: PaymentFormModalProps) {
   const { t } = useLanguage();
   const [amount, setAmount] = useState("")
   const [date, setDate] = useState("")
@@ -73,7 +74,20 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="amount">{t('amount')} ({currency === 'MGA' ? t('currency_mga_symbol') : 'Fmg'})</Label>
+            <div className="flex justify-between items-center">
+                <Label htmlFor="amount">{t('amount')} ({currency === 'MGA' ? t('currency_mga_symbol') : 'Fmg'})</Label>
+                {rentAmount && (
+                    <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-auto p-0 text-xs text-primary"
+                        onClick={() => setAmount(rentAmount.toString())}
+                    >
+                        {t('use_rent_amount')}: {rentAmount}
+                    </Button>
+                )}
+            </div>
             <Input
               id="amount"
               type="number"

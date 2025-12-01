@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useTransition } from "react"
 import { useRouter } from "next/navigation"
-import { calculateDashboardSummary } from "@/lib/rental-utils"
+import { calculateDashboardSummary, calculateRangeSummary } from "@/lib/rental-utils"
 import { MonthPicker } from "./month-picker"
 import { SummaryCards } from "./summary-cards"
 import { StatusList } from "./status-list"
@@ -26,15 +26,35 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
   const { t } = useLanguage();
   const [isPending, startTransition] = useTransition()
   
-  const [year, setYear] = useState(initialYear)
-  const [month, setMonth] = useState(initialMonth)
+  const [isRangeMode, setIsRangeMode] = useState(false)
+  const [endYear, setEndYear] = useState(initialYear)
+  const [endMonth, setEndMonth] = useState(initialMonth)
 
-  const [paymentModal, setPaymentModal] = useState<{ open: boolean; leaseId: string; apartmentName: string }>({ open: false, leaseId: "", apartmentName: "" })
+  const [paymentModal, setPaymentModal] = useState<{ open: boolean; leaseId: string; apartmentName: string; rentAmount?: number }>({ open: false, leaseId: "", apartmentName: "" })
   const [leaseModal, setLeaseModal] = useState<{ open: boolean; apartmentId: string; apartmentName: string }>({ open: false, apartmentId: "", apartmentName: "" })
 
   const summary = useMemo(
-    () => calculateDashboardSummary(apartments, leases, payments, year, month),
-    [apartments, leases, payments, year, month],
+    () => {
+        if (isRangeMode) {
+            // Ensure start is before end
+            const start = new Date(year, month);
+            const end = new Date(endYear, endMonth);
+            if (start > end) {
+                return calculateDashboardSummary(apartments, leases, payments, year, month); // Fallback or handle error?
+                // For now, let's just swap them or assume user knows. 
+                // Better: calculateRangeSummary handles it or we swap here.
+                // Let's just pass as is, but logic in utils assumes start <= end loop.
+                // Let's swap if needed for the calculation.
+                 if (start > end) {
+                     return calculateRangeSummary(apartments, leases, payments, endYear, endMonth, year, month);
+                 }
+                 return calculateRangeSummary(apartments, leases, payments, year, month, endYear, endMonth);
+            }
+            return calculateRangeSummary(apartments, leases, payments, year, month, endYear, endMonth);
+        }
+        return calculateDashboardSummary(apartments, leases, payments, year, month)
+    },
+    [apartments, leases, payments, year, month, isRangeMode, endYear, endMonth],
   )
 
   const handleAction = (action: () => Promise<any>) => {
@@ -49,8 +69,13 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
     setMonth(newMonth)
   }
 
-  const handleAddPaymentClick = (leaseId: string, apartmentName: string) => {
-    setPaymentModal({ open: true, leaseId, apartmentName })
+  const handleEndMonthChange = (newYear: number, newMonth: number) => {
+    setEndYear(newYear)
+    setEndMonth(newMonth)
+  }
+
+  const handleAddPaymentClick = (leaseId: string, apartmentName: string, rentAmount: number) => {
+    setPaymentModal({ open: true, leaseId, apartmentName, rentAmount })
   }
 
   const handleAddLeaseClick = (apartmentId: string, apartmentName: string) => {
@@ -71,7 +96,31 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h2 className="text-2xl font-bold font-headline">{t('financial_overview')}</h2>
-        <MonthPicker year={year} month={month} onChange={handleMonthChange} />
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex items-center space-x-2 bg-muted p-1 rounded-md">
+                <button
+                    className={`px-3 py-1 text-sm rounded-sm transition-all ${!isRangeMode ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+                    onClick={() => setIsRangeMode(false)}
+                >
+                    {t('single_month')}
+                </button>
+                <button
+                    className={`px-3 py-1 text-sm rounded-sm transition-all ${isRangeMode ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+                    onClick={() => setIsRangeMode(true)}
+                >
+                    {t('range')}
+                </button>
+            </div>
+            <div className="flex items-center gap-2">
+                <MonthPicker year={year} month={month} onChange={handleMonthChange} />
+                {isRangeMode && (
+                    <>
+                        <span className="text-muted-foreground">-</span>
+                        <MonthPicker year={endYear} month={endMonth} onChange={handleEndMonthChange} />
+                    </>
+                )}
+            </div>
+        </div>
       </div>
 
       <SummaryCards
@@ -91,6 +140,7 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
         onSave={handleSavePayment}
         leaseId={paymentModal.leaseId}
         apartmentName={paymentModal.apartmentName}
+        rentAmount={paymentModal.rentAmount}
         currency={currency}
       />
 

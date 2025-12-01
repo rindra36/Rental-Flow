@@ -150,6 +150,133 @@ export function calculateDashboardSummary(
     };
 }
 
+// Calculate dashboard summary for a range
+export function calculateRangeSummary(
+    apartments: Apartment[],
+    leases: Lease[],
+    payments: Payment[],
+    startYear: number,
+    startMonth: number,
+    endYear: number,
+    endMonth: number
+) {
+    let currentYear = startYear;
+    let currentMonth = startMonth;
+    const endDate = new Date(endYear, endMonth);
+
+    // Initialize aggregates
+    let totalExpectedIncome = 0;
+    let totalCollected = 0;
+    let totalMissing = 0;
+    
+    // We'll track unique statuses across the range for counts? 
+    // Or maybe average? For simplicity, let's just aggregate financials
+    // and for counts, maybe we just show the status of the *current* (latest) month in the range?
+    // Or we can say "Occupied" if occupied at any point?
+    // Let's aggregate financials and for the list, we might need a different approach.
+    // The requirement says "get the Overview of these months".
+    // Usually this means financial totals. The "Status List" might be confusing for a range.
+    // Let's assume the Status List should show the aggregate status for each apartment over the range.
+
+    const apartmentAggregates = new Map<string, {
+        apartment: Apartment;
+        rentForPeriod: number;
+        totalPaid: number;
+        deficit: number;
+        status: ApartmentStatus; // Overall status for the period
+        lease?: Lease;
+        payments: Payment[];
+    }>();
+
+    // Initialize map
+    apartments.forEach(apt => {
+        apartmentAggregates.set(apt.id, {
+            apartment: apt,
+            rentForPeriod: 0,
+            totalPaid: 0,
+            deficit: 0,
+            status: 'vacant',
+            payments: []
+        });
+    });
+
+    while (new Date(currentYear, currentMonth) <= endDate) {
+        const monthStatuses = apartments.map(apt => calculateApartmentStatus(apt, leases, payments, currentYear, currentMonth));
+
+        monthStatuses.forEach(status => {
+            const agg = apartmentAggregates.get(status.apartment.id)!;
+            
+            // Accumulate financials
+            if (status.status !== 'vacant') {
+                agg.rentForPeriod += status.rentForMonth;
+                agg.totalPaid += status.totalPaid;
+                agg.deficit += status.deficit;
+                
+                // If it was vacant, now it's occupied (at least partially)
+                if (agg.status === 'vacant') {
+                    agg.status = status.status;
+                    agg.lease = status.lease; // Keep the first lease found? or last?
+                } else if (status.status === 'deficit') {
+                     // If any month has a deficit, the overall status is deficit (unless fully paid later? No, let's keep it simple)
+                     // Actually, we should re-calculate status based on total rent vs total paid at the end.
+                }
+            }
+            
+            agg.payments.push(...status.payments);
+        });
+
+        // Increment month
+        currentMonth++;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        }
+    }
+
+    // Finalize statuses
+    const finalStatuses: ApartmentStatusInfo[] = Array.from(apartmentAggregates.values()).map(agg => {
+        // Recalculate status based on totals
+        let status: ApartmentStatus = 'vacant';
+        if (agg.rentForPeriod > 0) {
+            if (agg.totalPaid >= agg.rentForPeriod) {
+                status = 'paid';
+            } else {
+                status = 'deficit';
+            }
+        } else {
+             // If rent was 0, it might be vacant the whole time
+             status = 'vacant';
+        }
+
+        return {
+            apartment: agg.apartment,
+            status: status,
+            lease: agg.lease,
+            payments: agg.payments, // This will contain duplicates if we just push. getPaymentsInMonth returns new array but objects are same ref.
+            // Actually calculateApartmentStatus returns filtered list.
+            // Let's deduplicate payments just in case, though logic above pushes unique month payments.
+            totalPaid: agg.totalPaid,
+            deficit: Math.max(0, agg.rentForPeriod - agg.totalPaid),
+            rentForMonth: agg.rentForPeriod // This is now "Rent for Period"
+        };
+    });
+
+    totalExpectedIncome = finalStatuses.filter(s => s.status !== 'vacant').reduce((sum, s) => sum + s.rentForMonth, 0);
+    totalCollected = finalStatuses.reduce((sum, s) => sum + s.totalPaid, 0);
+    totalMissing = finalStatuses.filter(s => s.status === 'deficit').reduce((sum, s) => sum + s.deficit, 0);
+
+    return {
+        statuses: finalStatuses,
+        expectedIncome: totalExpectedIncome,
+        collected: totalCollected,
+        missing: totalMissing,
+        occupiedCount: finalStatuses.filter((s) => s.status !== "vacant").length,
+        vacantCount: finalStatuses.filter((s) => s.status === "vacant").length,
+        paidCount: finalStatuses.filter((s) => s.status === "paid").length,
+        deficitCount: finalStatuses.filter((s) => s.status === "deficit").length,
+    };
+}
+
 // Format currency
 export function formatCurrency(
     amount: number,
