@@ -12,28 +12,26 @@ const translations = { en, fr };
 // A simple template replacement function
 const simpleTemplate = (str: string, data: Record<string, any> = {}) => {
   if (!str) return '';
+  
   // Improved pluralization handling for {count, plural, ...}
-  return str.replace(/\{(\w+)(, plural, (.*?))?\}/g, (match, key, plural, pluralOptions) => {
+  return str.replace(/\{(\w+), plural, (.*?)\}/g, (match, key, pluralOptions) => {
     if (data.hasOwnProperty(key)) {
       const value = data[key];
-      if (plural && pluralOptions) {
-        try {
-            // Very basic ICU-like plural parsing
-            const oneMatch = pluralOptions.match(/one {(.*?)}/);
-            const otherMatch = pluralOptions.match(/other {(.*?)}/);
-            
-            if (value === 1 && oneMatch) {
-              return oneMatch[1];
-            }
-            if (otherMatch) {
-              return otherMatch[1].replace('#', String(value));
-            }
-        } catch (e) {
-            // fallback to just showing the value
-             return String(value);
+      try {
+        // Very basic ICU-like plural parsing
+        const oneMatch = pluralOptions.match(/one {(.*?)}/);
+        const otherMatch = pluralOptions.match(/other {(.*?)}/);
+        
+        if (value === 1 && oneMatch) {
+          return oneMatch[1].replace('#', String(value));
         }
+        if (otherMatch) {
+          return otherMatch[1].replace('#', String(value));
+        }
+      } catch (e) {
+        // fallback to just showing the value
+        return String(value);
       }
-      return String(value);
     }
     // Fallback if the key is not in data to avoid showing "{key}"
     return match;
