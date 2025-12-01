@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { getMonthName } from "@/lib/rental-utils"
+import { useLanguage } from "@/context/language-context"
 
 interface MonthPickerProps {
   year: number
@@ -12,6 +13,7 @@ interface MonthPickerProps {
 }
 
 export function MonthPicker({ year, month, onChange }: MonthPickerProps) {
+  const { t } = useLanguage();
   const [isDisabled, setIsDisabled] = useState(true);
 
   const goToPreviousMonth = () => {
@@ -43,23 +45,23 @@ export function MonthPicker({ year, month, onChange }: MonthPickerProps) {
 
   return (
     <div className="flex items-center gap-1 sm:gap-2">
-      <Button variant="outline" size="icon" onClick={goToPreviousMonth} aria-label="Previous month">
+      <Button variant="outline" size="icon" onClick={goToPreviousMonth} aria-label={t('previous_month')}>
         <ChevronLeft className="h-4 w-4" />
       </Button>
 
       <div className="flex items-center gap-2 min-w-[150px] sm:min-w-[180px] justify-center">
         <Calendar className="h-4 w-4 text-muted-foreground" />
         <span className="font-semibold text-base sm:text-lg">
-          {getMonthName(month)} {year}
+          {getMonthName(month, t.locale)} {year}
         </span>
       </div>
 
-      <Button variant="outline" size="icon" onClick={goToNextMonth} aria-label="Next month">
+      <Button variant="outline" size="icon" onClick={goToNextMonth} aria-label={t('next_month')}>
         <ChevronRight className="h-4 w-4" />
       </Button>
 
       <Button variant="ghost" size="sm" onClick={goToToday} className="ml-2" disabled={isDisabled}>
-        Today
+        {t('today')}
       </Button>
     </div>
   )

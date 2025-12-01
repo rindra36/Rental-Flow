@@ -10,6 +10,7 @@ import { PaymentFormModal } from "./payment-form-modal"
 import { LeaseFormModal } from "./lease-form-modal"
 import * as actions from "@/app/actions"
 import type { Apartment, Lease, Payment, Currency } from "@/types"
+import { useLanguage } from "@/context/language-context"
 
 interface DashboardViewProps {
   apartments: Apartment[]
@@ -22,6 +23,7 @@ interface DashboardViewProps {
 
 export function DashboardView({ apartments, leases, payments, initialYear, initialMonth, currency }: DashboardViewProps) {
   const router = useRouter()
+  const { t } = useLanguage();
   const [isPending, startTransition] = useTransition()
   
   const [year, setYear] = useState(initialYear)
@@ -68,7 +70,7 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-2xl font-bold font-headline">Financial Overview</h2>
+        <h2 className="text-2xl font-bold font-headline">{t('financial_overview')}</h2>
         <MonthPicker year={year} month={month} onChange={handleMonthChange} />
       </div>
 

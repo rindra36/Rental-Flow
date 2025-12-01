@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Plus, User, Calendar } from "lucide-react"
 import { formatCurrency, formatDate } from "@/lib/rental-utils"
 import type { ApartmentStatusInfo, Currency } from "@/types"
+import { useLanguage } from "@/context/language-context"
 
 interface StatusListProps {
   statuses: ApartmentStatusInfo[]
@@ -15,21 +16,22 @@ interface StatusListProps {
 }
 
 export function StatusList({ statuses, onAddPayment, onAddLease, currency }: StatusListProps) {
+  const { t } = useLanguage();
   const getStatusBadge = (status: ApartmentStatusInfo["status"]) => {
     switch (status) {
       case "vacant":
-        return <Badge variant="secondary">Vacant</Badge>
+        return <Badge variant="secondary">{t('status_vacant')}</Badge>
       case "paid":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-700 text-emerald-50">Paid</Badge>
+        return <Badge className="bg-emerald-600 hover:bg-emerald-700 text-emerald-50">{t('status_paid')}</Badge>
       case "deficit":
-        return <Badge variant="destructive">Deficit</Badge>
+        return <Badge variant="destructive">{t('status_deficit')}</Badge>
     }
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline">Apartment Status</CardTitle>
+        <CardTitle className="font-headline">{t('apartment_status')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -43,7 +45,7 @@ export function StatusList({ statuses, onAddPayment, onAddLease, currency }: Sta
                   <h3 className="font-semibold">{info.apartment.name}</h3>
                   {getStatusBadge(info.status)}
                 </div>
-                <p className="text-sm text-muted-foreground">Rent: {formatCurrency(info.rentForMonth, currency)}</p>
+                <p className="text-sm text-muted-foreground">{t('rent')}: {formatCurrency(info.rentForMonth, currency)}</p>
                 {info.lease && (
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
                     {info.lease.tenantName && (
@@ -54,7 +56,7 @@ export function StatusList({ statuses, onAddPayment, onAddLease, currency }: Sta
                     )}
                     <span className="flex items-center gap-1.5">
                       <Calendar className="h-3.5 w-3.5" />
-                      {formatDate(info.lease.startDate)} - {formatDate(info.lease.endDate)}
+                      {formatDate(info.lease.startDate, t.locale)} - {formatDate(info.lease.endDate, t.locale)}
                     </span>
                   </div>
                 )}
@@ -65,12 +67,12 @@ export function StatusList({ statuses, onAddPayment, onAddLease, currency }: Sta
                   <>
                     <div className="text-left sm:text-right">
                       <p className="text-sm">
-                        Collected:{" "}
+                        {t('collected')}:{" "}
                         <span className="font-semibold text-emerald-600">{formatCurrency(info.totalPaid, currency)}</span>
                       </p>
                       {info.deficit > 0 && !info.payments.some(p => p.isFullPayment) && (
                         <p className="text-sm">
-                          Missing: <span className="font-semibold text-destructive">{formatCurrency(info.deficit, currency)}</span>
+                          {t('missing')}: <span className="font-semibold text-destructive">{formatCurrency(info.deficit, currency)}</span>
                         </p>
                       )}
                     </div>
@@ -80,7 +82,7 @@ export function StatusList({ statuses, onAddPayment, onAddLease, currency }: Sta
                       onClick={() => onAddPayment(info.lease!.id, info.apartment.name)}
                     >
                       <Plus className="h-3 w-3 mr-1" />
-                      Add Payment
+                      {t('add_payment')}
                     </Button>
                   </>
                 ) : (
@@ -90,7 +92,7 @@ export function StatusList({ statuses, onAddPayment, onAddLease, currency }: Sta
                     onClick={() => onAddLease(info.apartment.id, info.apartment.name)}
                   >
                     <Plus className="h-3 w-3 mr-1" />
-                    Add Lease
+                    {t('add_lease')}
                   </Button>
                 )}
               </div>
@@ -99,7 +101,7 @@ export function StatusList({ statuses, onAddPayment, onAddLease, currency }: Sta
 
           {statuses.length === 0 && (
             <p className="text-center text-muted-foreground py-8">
-              No apartments found. Add some apartments to get started.
+              {t('no_apartments_found_status')}
             </p>
           )}
         </div>

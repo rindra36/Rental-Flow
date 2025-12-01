@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Payment, Currency } from "@/types"
 import { Loader2 } from "lucide-react"
+import { useLanguage } from "@/context/language-context"
 
 interface PaymentFormModalProps {
   open: boolean
@@ -28,6 +29,7 @@ interface PaymentFormModalProps {
 }
 
 export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName, payment, currency }: PaymentFormModalProps) {
+  const { t } = useLanguage();
   const [amount, setAmount] = useState("")
   const [date, setDate] = useState("")
   const [isFullPayment, setIsFullPayment] = useState(false)
@@ -66,12 +68,12 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{payment ? "Edit Payment" : "Record a Payment"}</DialogTitle>
-          <DialogDescription>For apartment: {apartmentName}</DialogDescription>
+          <DialogTitle>{payment ? t('edit_payment') : t('record_payment')}</DialogTitle>
+          <DialogDescription>{t('for_apartment')}: {apartmentName}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount ({currency === 'MGA' ? 'Ar' : 'Fmg'})</Label>
+            <Label htmlFor="amount">{t('amount')} ({currency === 'MGA' ? t('currency_mga_symbol') : 'Fmg'})</Label>
             <Input
               id="amount"
               type="number"
@@ -85,7 +87,7 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="date">Payment Date</Label>
+            <Label htmlFor="date">{t('payment_date')}</Label>
             <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required disabled={isPending} />
           </div>
           <div className="items-top flex space-x-2">
@@ -97,20 +99,20 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
             />
             <div className="grid gap-1.5 leading-none">
                 <Label htmlFor="isFullPayment" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Mark as full month's payment
+                    {t('mark_as_full_payment')}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                    Select this for partial payments that settle the month's rent (e.g. after a discount).
+                    {t('mark_as_full_payment_description')}
                 </p>
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isPending ? 'Saving...' : (payment ? "Update Payment" : "Record Payment")}
+              {isPending ? t('saving') : (payment ? t('update_payment') : t('record_payment'))}
             </Button>
           </DialogFooter>
         </form>

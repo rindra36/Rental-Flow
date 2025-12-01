@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import type { Lease } from "@/types"
 import { Loader2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useLanguage } from "@/context/language-context"
 
 interface LeaseFormModalProps {
   open: boolean
@@ -21,6 +22,7 @@ interface LeaseFormModalProps {
 }
 
 export function LeaseFormModal({ open, onClose, onSave, apartmentId, apartmentName, lease }: LeaseFormModalProps) {
+  const { t } = useLanguage();
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
   const [tenantName, setTenantName] = useState("")
@@ -81,15 +83,15 @@ export function LeaseFormModal({ open, onClose, onSave, apartmentId, apartmentNa
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{lease ? "Edit Lease" : "Add New Lease"}</DialogTitle>
-          <DialogDescription>For apartment: {apartmentName}</DialogDescription>
+          <DialogTitle>{lease ? t('edit_lease') : t('add_new_lease')}</DialogTitle>
+          <DialogDescription>{t('for_apartment')}: {apartmentName}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="tenantName">Tenant Name (Optional)</Label>
+            <Label htmlFor="tenantName">{t('tenant_name_optional')}</Label>
             <Input
               id="tenantName"
-              placeholder="e.g., John Smith"
+              placeholder={t('tenant_name_placeholder')}
               value={tenantName}
               onChange={(e) => setTenantName(e.target.value)}
               disabled={isPending}
@@ -97,7 +99,7 @@ export function LeaseFormModal({ open, onClose, onSave, apartmentId, apartmentNa
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
+              <Label htmlFor="startDate">{t('start_date')}</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -108,7 +110,7 @@ export function LeaseFormModal({ open, onClose, onSave, apartmentId, apartmentNa
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
+              <Label htmlFor="endDate">{t('end_date')}</Label>
               <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required disabled={isPending || isStillRenting} />
             </div>
           </div>
@@ -121,20 +123,20 @@ export function LeaseFormModal({ open, onClose, onSave, apartmentId, apartmentNa
             />
             <div className="grid gap-1.5 leading-none">
                 <Label htmlFor="isStillRenting" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Tenant is currently renting
+                    {t('tenant_is_renting')}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                    Select for an ongoing lease without a fixed end date.
+                    {t('tenant_is_renting_description')}
                 </p>
             </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isPending ? 'Saving...' : (lease ? "Update Lease" : "Add Lease")}
+              {isPending ? t('saving') : (lease ? t('update_lease') : t('add_lease'))}
             </Button>
           </DialogFooter>
         </form>

@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { formatDate, formatCurrency, getPriceForMonth } from "@/lib/rental-utils"
 import type { Apartment, Lease, Payment, Currency } from "@/types"
 import { Separator } from "@/components/ui/separator"
+import { useLanguage } from "@/context/language-context"
 
 interface LeaseManagementModalProps {
   open: boolean
@@ -37,6 +38,7 @@ export function LeaseManagementModal({
   onDeletePayment,
   currency,
 }: LeaseManagementModalProps) {
+  const { t } = useLanguage();
   const [expandedLease, setExpandedLease] = useState<string | null>(null)
 
   if (!apartment) return null
@@ -64,21 +66,21 @@ export function LeaseManagementModal({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Manage Leases for {apartment.name}</DialogTitle>
-          <DialogDescription>Current rent: {formatCurrency(currentRent, currency)}/month</DialogDescription>
+          <DialogTitle>{t('manage_leases_for')} {apartment.name}</DialogTitle>
+          <DialogDescription>{t('current_rent')}: {formatCurrency(currentRent, currency)}/{t('month')}</DialogDescription>
         </DialogHeader>
 
         <div className="flex justify-end items-center -mt-4">
           <Button onClick={onAddLease} size="sm">
             <Plus className="h-4 w-4 mr-1" />
-            Add New Lease
+            {t('add_new_lease')}
           </Button>
         </div>
 
         <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-4">
             {sortedLeases.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No leases found for this apartment.</p>
+              <p className="text-center text-muted-foreground py-8">{t('no_leases_found')}</p>
             ) : (
               sortedLeases.map((lease) => {
                 const leasePayments = getLeasePayments(lease.id)
@@ -90,18 +92,18 @@ export function LeaseManagementModal({
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-medium">{lease.tenantName || "No tenant name"}</h4>
-                          <Badge variant={active ? "default" : "secondary"}>{active ? "Active" : "Inactive"}</Badge>
+                          <h4 className="font-medium">{lease.tenantName || t('no_tenant_name')}</h4>
+                          <Badge variant={active ? "default" : "secondary"}>{active ? t('active') : t('inactive')}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {formatDate(lease.startDate)} - {formatDate(lease.endDate)}
+                          {formatDate(lease.startDate, t.locale)} - {formatDate(lease.endDate, t.locale)}
                         </p>
                       </div>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => onAddPayment(lease.id)} aria-label="Add Payment">
+                        <Button variant="ghost" size="icon" onClick={() => onAddPayment(lease.id)} aria-label={t('add_payment')}>
                           <DollarSign className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => onEditLease(lease)} aria-label="Edit Lease">
+                        <Button variant="ghost" size="icon" onClick={() => onEditLease(lease)} aria-label={t('edit_lease')}>
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
@@ -109,7 +111,7 @@ export function LeaseManagementModal({
                           size="icon"
                           onClick={() => onDeleteLease(lease)}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          aria-label="Delete Lease"
+                          aria-label={t('delete_lease')}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -124,13 +126,13 @@ export function LeaseManagementModal({
                       className="p-0 h-auto text-sm"
                       onClick={() => setExpandedLease(isExpanded ? null : lease.id)}
                     >
-                      {isExpanded ? "Hide" : "Show"} payments ({leasePayments.length})
+                      {isExpanded ? t('hide') : t('show')} {t('payments')} ({leasePayments.length})
                     </Button>
 
                     {isExpanded && (
                       <div className="mt-3 space-y-2">
                         {leasePayments.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No payments recorded for this lease.</p>
+                          <p className="text-sm text-muted-foreground">{t('no_payments_recorded')}</p>
                         ) : (
                           leasePayments.map((payment) => (
                             <div
@@ -139,10 +141,10 @@ export function LeaseManagementModal({
                             >
                               <div>
                                 <span className="font-medium">{formatCurrency(payment.amount, currency)}</span>
-                                <span className="text-muted-foreground ml-2">{formatDate(payment.date)}</span>
+                                <span className="text-muted-foreground ml-2">{formatDate(payment.date, t.locale)}</span>
                                 {payment.isFullPayment && (
                                   <Badge variant="outline" className="ml-2 text-xs">
-                                    Full Payment
+                                    {t('full_payment')}
                                   </Badge>
                                 )}
                               </div>
@@ -151,7 +153,7 @@ export function LeaseManagementModal({
                                 size="icon"
                                 className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
                                 onClick={() => onDeletePayment(payment)}
-                                aria-label="Delete Payment"
+                                aria-label={t('delete_payment')}
                               >
                                 <Trash2 className="h-3 w-3" />
                               </Button>

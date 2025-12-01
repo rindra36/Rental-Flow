@@ -12,6 +12,7 @@ import { PaymentFormModal } from "./payment-form-modal"
 import { DeleteConfirmModal } from "./delete-confirm-modal"
 import * as actions from "@/app/actions"
 import type { Apartment, Lease, Payment, Currency, PriceHistory } from "@/types"
+import { useLanguage } from "@/context/language-context"
 
 interface ApartmentsViewProps {
   apartments: Apartment[]
@@ -22,6 +23,7 @@ interface ApartmentsViewProps {
 
 export function ApartmentsView({ apartments, leases, payments, currency }: ApartmentsViewProps) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [isPending, startTransition] = useTransition()
 
   const [apartmentModal, setApartmentModal] = useState<{ open: boolean; apartment: Apartment | null }>({ open: false, apartment: null })
@@ -74,19 +76,19 @@ export function ApartmentsView({ apartments, leases, payments, currency }: Apart
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-headline">Apartments</h2>
+        <h2 className="text-2xl font-bold font-headline">{t('apartments')}</h2>
         <Button onClick={() => setApartmentModal({ open: true, apartment: null })}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Apartment
+          {t('add_apartment')}
         </Button>
       </div>
 
       {apartments.length === 0 ? (
         <div className="text-center py-12 border-2 border-dashed rounded-lg">
-          <p className="text-muted-foreground mb-4">No apartments yet. Let's add one!</p>
+          <p className="text-muted-foreground mb-4">{t('no_apartments_yet')}</p>
           <Button onClick={() => setApartmentModal({ open: true, apartment: null })}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Your First Apartment
+            {t('add_first_apartment')}
           </Button>
         </div>
       ) : (
@@ -130,13 +132,13 @@ export function ApartmentsView({ apartments, leases, payments, currency }: Apart
               setLeaseModal({ open: true, apartmentId: leaseManagementModal.apartment.id, apartmentName: leaseManagementModal.apartment.name, lease })
             }
           }}
-          onDeleteLease={(lease) => setDeleteModal({ open: true, type: "lease", id: lease.id, name: lease.tenantName || "this lease" })}
+          onDeleteLease={(lease) => setDeleteModal({ open: true, type: "lease", id: lease.id, name: lease.tenantName || t('this_lease') })}
           onAddPayment={(leaseId) => {
             if (leaseManagementModal.apartment) {
               setPaymentModal({ open: true, leaseId, apartmentName: leaseManagementModal.apartment.name })
             }
           }}
-          onDeletePayment={(payment) => setDeleteModal({ open: true, type: "payment", id: payment.id, name: "this payment" })}
+          onDeletePayment={(payment) => setDeleteModal({ open: true, type: "payment", id: payment.id, name: t('this_payment') })}
           currency={currency}
         />
       )}
@@ -163,14 +165,8 @@ export function ApartmentsView({ apartments, leases, payments, currency }: Apart
         open={deleteModal.open}
         onClose={() => setDeleteModal({ open: false, type: "apartment", id: "", name: "" })}
         onConfirm={handleConfirmDelete}
-        title={`Delete ${deleteModal.type === "apartment" ? "Apartment" : deleteModal.type === 'lease' ? "Lease" : "Payment"}?`}
-        description={
-          deleteModal.type === "apartment"
-            ? `This will permanently delete "${deleteModal.name}" and all associated leases and payments.`
-            : deleteModal.type === 'lease'
-            ? `This will permanently delete ${deleteModal.name}.`
-            : `This will permanently delete ${deleteModal.name}.`
-        }
+        itemType={deleteModal.type}
+        itemName={deleteModal.name}
       />
     </div>
   )

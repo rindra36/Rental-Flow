@@ -113,25 +113,25 @@ export function calculateDashboardSummary(
 // Format currency
 export function formatCurrency(amount: number, currency: Currency = 'MGA'): string {
   const displayAmount = currency === 'Fmg' ? amount * 5 : amount;
+  const locale = 'fr-MG'; // Malagasy locale for formatting
   
   if (currency === 'MGA') {
-    // Consistent formatting for MGA (Ariary)
-    return `Ar ${displayAmount.toLocaleString('fr-MG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    return displayAmount.toLocaleString(locale, { style: 'currency', currency: 'MGA', minimumFractionDigits: 0, maximumFractionDigits: 0 });
   } 
   
-  // Consistent formatting for Fmg
-  return `Fmg ${displayAmount.toLocaleString('fr-MG', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  // Custom formatting for Fmg
+  return `${displayAmount.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Fmg`;
 }
 
 
 // Format date
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string, locale: string = "en-US"): string {
   if (dateString === "9999-12-31") {
-    return "Present";
+    return locale === 'fr' ? 'Présent' : "Present";
   }
   // Add a time to the date string to avoid timezone issues where it might be interpreted as the previous day
   const date = new Date(dateString + 'T00:00:00Z');
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -140,6 +140,6 @@ export function formatDate(dateString: string): string {
 }
 
 // Get month name
-export function getMonthName(month: number): string {
-  return new Date(Date.UTC(2025, month, 1)).toLocaleString("en-US", { month: "long", timeZone: "UTC" })
+export function getMonthName(month: number, locale: string = "en-US"): string {
+  return new Date(Date.UTC(2025, month, 1)).toLocaleString(locale, { month: "long", timeZone: "UTC" })
 }

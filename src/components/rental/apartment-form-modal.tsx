@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { Apartment, Currency, PriceHistory } from "@/types"
 import { Loader2, Plus, Trash2 } from "lucide-react"
+import { useLanguage } from "@/context/language-context"
 
 type PriceHistoryEntry = Omit<PriceHistory, "id"> & { id?: string };
 
@@ -20,6 +21,7 @@ interface ApartmentFormModalProps {
 }
 
 export function ApartmentFormModal({ open, onClose, onSave, apartment, currency }: ApartmentFormModalProps) {
+  const { t } = useLanguage();
   const [name, setName] = useState("")
   const [priceHistory, setPriceHistory] = useState<PriceHistoryEntry[]>([])
   const [isPending, startTransition] = useTransition();
@@ -71,18 +73,20 @@ export function ApartmentFormModal({ open, onClose, onSave, apartment, currency 
     });
   }
 
+  const dialogTitle = apartment ? t('edit_apartment') : t('add_new_apartment');
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{apartment ? "Edit Apartment" : "Add New Apartment"}</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Apartment Name</Label>
+            <Label htmlFor="name">{t('apartment_name')}</Label>
             <Input
               id="name"
-              placeholder="e.g., Apt 4B"
+              placeholder={t('apartment_name_placeholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -91,11 +95,11 @@ export function ApartmentFormModal({ open, onClose, onSave, apartment, currency 
           </div>
           
           <div className="space-y-3">
-            <Label>{apartment ? "Price History" : "Monthly Rent"}</Label>
+            <Label>{apartment ? t('price_history') : t('monthly_rent')}</Label>
             {priceHistory.map((entry, index) => (
                 <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
                     <div>
-                        <Label htmlFor={`price-${index}`} className="text-xs text-muted-foreground">Amount ({currency === 'MGA' ? 'Ar' : 'Fmg'})</Label>
+                        <Label htmlFor={`price-${index}`} className="text-xs text-muted-foreground">{t('amount')} ({currency === 'MGA' ? t('currency_mga_symbol') : 'Fmg'})</Label>
                         <Input
                             id={`price-${index}`}
                             type="number"
@@ -109,7 +113,7 @@ export function ApartmentFormModal({ open, onClose, onSave, apartment, currency 
                         />
                     </div>
                     <div>
-                        <Label htmlFor={`date-${index}`} className="text-xs text-muted-foreground">Effective Date</Label>
+                        <Label htmlFor={`date-${index}`} className="text-xs text-muted-foreground">{t('effective_date')}</Label>
                          <Input
                             id={`date-${index}`}
                             type="date"
@@ -126,7 +130,7 @@ export function ApartmentFormModal({ open, onClose, onSave, apartment, currency 
                         onClick={() => removePriceEntry(index)}
                         disabled={isPending || priceHistory.length <= 1}
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        aria-label="Remove price entry"
+                        aria-label={t('remove_price_entry')}
                     >
                         <Trash2 className="h-4 w-4" />
                     </Button>
@@ -135,18 +139,18 @@ export function ApartmentFormModal({ open, onClose, onSave, apartment, currency 
             {apartment && (
                 <Button type="button" variant="outline" size="sm" onClick={addPriceEntry} disabled={isPending}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Price Change
+                    {t('add_price_change')}
                 </Button>
             )}
           </div>
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isPending ? 'Saving...' : (apartment ? "Update" : "Add Apartment")}
+              {isPending ? t('saving') : (apartment ? t('update') : t('add_apartment'))}
             </Button>
           </DialogFooter>
         </form>
