@@ -26,6 +26,8 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
   const { t } = useLanguage();
   const [isPending, startTransition] = useTransition()
   
+  const [year, setYear] = useState(initialYear)
+  const [month, setMonth] = useState(initialMonth)
   const [isRangeMode, setIsRangeMode] = useState(false)
   const [endYear, setEndYear] = useState(initialYear)
   const [endMonth, setEndMonth] = useState(initialMonth)
