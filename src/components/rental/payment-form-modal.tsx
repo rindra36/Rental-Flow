@@ -133,7 +133,7 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
                     </Button>
                 )}
             </div>
-            </div>
+
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
           <div className="space-y-2">
