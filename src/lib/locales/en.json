@@ -92,5 +92,6 @@
     "close": "Close",
     "use_rent_amount": "Use Rent Amount",
     "single_month": "Single Month",
-    "range": "Range"
+    "range": "Range",
+    "payment_exceeds_remaining": "Payment cannot exceed remaining balance of {remaining}"
 }

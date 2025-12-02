@@ -92,5 +92,6 @@
     "close": "Fermer",
     "use_rent_amount": "Utiliser le loyer",
     "single_month": "Mois unique",
-    "range": "Période"
+    "range": "Période",
+    "payment_exceeds_remaining": "Le paiement ne peut pas dépasser le solde restant de {remaining}"
 }

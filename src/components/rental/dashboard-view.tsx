@@ -32,7 +32,7 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
   const [endYear, setEndYear] = useState(initialYear)
   const [endMonth, setEndMonth] = useState(initialMonth)
 
-  const [paymentModal, setPaymentModal] = useState<{ open: boolean; leaseId: string; apartmentName: string; rentAmount?: number }>({ open: false, leaseId: "", apartmentName: "" })
+  const [paymentModal, setPaymentModal] = useState<{ open: boolean; leaseId: string; apartmentName: string; rentAmount?: number; alreadyPaid?: number }>({ open: false, leaseId: "", apartmentName: "" })
   const [leaseModal, setLeaseModal] = useState<{ open: boolean; apartmentId: string; apartmentName: string }>({ open: false, apartmentId: "", apartmentName: "" })
 
   const summary = useMemo(
@@ -76,8 +76,8 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
     setEndMonth(newMonth)
   }
 
-  const handleAddPaymentClick = (leaseId: string, apartmentName: string, rentAmount: number) => {
-    setPaymentModal({ open: true, leaseId, apartmentName, rentAmount })
+  const handleAddPaymentClick = (leaseId: string, apartmentName: string, rentAmount: number, totalPaid: number) => {
+    setPaymentModal({ open: true, leaseId, apartmentName, rentAmount, alreadyPaid: totalPaid })
   }
 
   const handleAddLeaseClick = (apartmentId: string, apartmentName: string) => {
@@ -143,6 +143,7 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
         leaseId={paymentModal.leaseId}
         apartmentName={paymentModal.apartmentName}
         rentAmount={paymentModal.rentAmount}
+        alreadyPaid={paymentModal.alreadyPaid}
         targetMonth={month}
         targetYear={year}
         currency={currency}

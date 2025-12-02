@@ -10,7 +10,7 @@ import { useLanguage } from "@/context/language-context"
 
 interface StatusListProps {
   statuses: ApartmentStatusInfo[]
-  onAddPayment: (leaseId: string, apartmentName: string, rentAmount: number) => void
+  onAddPayment: (leaseId: string, apartmentName: string, rentAmount: number, totalPaid: number) => void
   onAddLease: (apartmentId: string, apartmentName: string) => void
   currency: Currency
 }
@@ -79,7 +79,7 @@ export function StatusList({ statuses, onAddPayment, onAddLease, currency }: Sta
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => onAddPayment(info.lease!.id, info.apartment.name, info.rentForMonth)}
+                      onClick={() => onAddPayment(info.lease!.id, info.apartment.name, info.rentForMonth, info.totalPaid)}
                     >
                       <Plus className="h-3 w-3 mr-1" />
                       {t('add_payment')}

@@ -28,9 +28,11 @@ interface PaymentFormModalProps {
   currency: Currency
   targetMonth?: number
   targetYear?: number
+  alreadyPaid?: number
+  rentAmount?: number
 }
 
-export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName, payment, currency, rentAmount, targetMonth, targetYear }: PaymentFormModalProps) {
+export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName, payment, currency, rentAmount, targetMonth, targetYear, alreadyPaid }: PaymentFormModalProps) {
   const { t } = useLanguage();
   const [amount, setAmount] = useState("")
   const [date, setDate] = useState("")
@@ -58,9 +60,29 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
     if (!amount || !date) return
 
     const numAmount = Number.parseFloat(amount)
-    if (rentAmount && numAmount > rentAmount) {
-        setError(t('payment_exceeds_rent') || "Payment cannot exceed rent amount")
-        return
+    
+    // Calculate remaining balance if rentAmount is provided
+    // If editing a payment, we shouldn't count the current payment amount against the limit
+    // But for now, let's keep it simple. If editing, maybe we should relax or adjust logic.
+    // The requirement implies "adding" a payment. 
+    // If editing, `alreadyPaid` includes the current payment amount if it was fetched from the list.
+    // However, `alreadyPaid` comes from `StatusList` which sums up ALL payments.
+    // So if we are editing, we should subtract the OLD amount from `alreadyPaid` before checking.
+    // BUT, the `payment` prop is passed only when editing.
+    // Let's assume for now this validation is primarily for NEW payments as per user story.
+    // If payment exists (editing), we might skip this check or adjust it.
+    
+    if (rentAmount) {
+        const currentAlreadyPaid = alreadyPaid || 0;
+        // If we are editing, we need to subtract the original amount of THIS payment from the total paid
+        // to get the "other" payments total.
+        const otherPaymentsTotal = payment ? Math.max(0, currentAlreadyPaid - payment.amount) : currentAlreadyPaid;
+        const remainingBalance = Math.max(0, rentAmount - otherPaymentsTotal);
+
+        if (numAmount > remainingBalance) {
+            setError(t('payment_exceeds_remaining', { remaining: remainingBalance }) || `Payment cannot exceed remaining balance of ${remainingBalance}`)
+            return
+        }
     }
 
     startTransition(async () => {
