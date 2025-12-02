@@ -64,7 +64,6 @@
     "tenant_is_renting": "Le locataire loue actuellement",
     "tenant_is_renting_description": "Sélectionnez pour un bail en cours sans date de fin fixe.",
     "update_lease": "Mettre à jour le bail",
-    "add_lease": "Ajouter un bail",
     "manage_leases_for": "Gérer les baux pour",
     "current_rent": "Loyer actuel",
     "month": "mois",
@@ -82,7 +81,6 @@
     "mark_as_full_payment": "Marquer comme paiement complet du mois",
     "mark_as_full_payment_description": "Sélectionnez pour les paiements partiels qui règlent le loyer du mois (ex: après une remise).",
     "update_payment": "Mettre à jour le paiement",
-    "record_payment": "Enregistrer le paiement",
     "month_short": "mois",
     "currency_placeholder": "Devise",
     "currency_mga": "Ariary (Ar)",
@@ -91,5 +89,8 @@
     "data_backup": "Sauvegarde",
     "toggle_language": "Changer de langue",
     "backup_modal_title": "Rappel de sauvegarde des données",
-    "close": "Fermer"
+    "close": "Fermer",
+    "use_rent_amount": "Utiliser le loyer",
+    "single_month": "Mois unique",
+    "range": "Période"
 }

@@ -64,7 +64,6 @@
     "tenant_is_renting": "Tenant is currently renting",
     "tenant_is_renting_description": "Select for an ongoing lease without a fixed end date.",
     "update_lease": "Update Lease",
-    "add_lease": "Add Lease",
     "manage_leases_for": "Manage Leases for",
     "current_rent": "Current rent",
     "month": "month",
@@ -82,7 +81,6 @@
     "mark_as_full_payment": "Mark as full month's payment",
     "mark_as_full_payment_description": "Select this for partial payments that settle the month's rent (e.g. after a discount).",
     "update_payment": "Update Payment",
-    "record_payment": "Record Payment",
     "month_short": "mo",
     "currency_placeholder": "Currency",
     "currency_mga": "Ariary (Ar)",
@@ -91,5 +89,8 @@
     "data_backup": "Data Backup",
     "toggle_language": "Toggle language",
     "backup_modal_title": "Data Backup Reminder",
-    "close": "Close"
+    "close": "Close",
+    "use_rent_amount": "Use Rent Amount",
+    "single_month": "Single Month",
+    "range": "Range"
 }

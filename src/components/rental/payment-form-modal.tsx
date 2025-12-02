@@ -74,31 +74,32 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
-                <Label htmlFor="amount">{t('amount')} ({currency === 'MGA' ? t('currency_mga_symbol') : 'Fmg'})</Label>
+            <Label htmlFor="amount">{t('amount')} ({currency === 'MGA' ? t('currency_mga_symbol') : 'Fmg'})</Label>
+            <div className="relative">
+                <Input
+                  id="amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="e.g., 1500"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                  disabled={isPending}
+                  className={rentAmount ? "pr-24" : ""}
+                />
                 {rentAmount && (
                     <Button 
                         type="button" 
                         variant="ghost" 
                         size="sm" 
-                        className="h-auto p-0 text-xs text-primary"
+                        className="absolute right-1 top-1 h-7 text-xs text-muted-foreground hover:text-primary"
                         onClick={() => setAmount(rentAmount.toString())}
                     >
                         {t('use_rent_amount')}: {rentAmount}
                     </Button>
                 )}
             </div>
-            <Input
-              id="amount"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="e.g., 1500"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              disabled={isPending}
-            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="date">{t('payment_date')}</Label>

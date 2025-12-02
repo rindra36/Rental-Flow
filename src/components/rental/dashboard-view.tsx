@@ -99,15 +99,15 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h2 className="text-2xl font-bold font-headline">{t('financial_overview')}</h2>
         <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="flex items-center space-x-2 bg-muted p-1 rounded-md">
+            <div className="flex items-center bg-muted p-1 rounded-lg border">
                 <button
-                    className={`px-3 py-1 text-sm rounded-sm transition-all ${!isRangeMode ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${!isRangeMode ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:bg-background/50'}`}
                     onClick={() => setIsRangeMode(false)}
                 >
                     {t('single_month')}
                 </button>
                 <button
-                    className={`px-3 py-1 text-sm rounded-sm transition-all ${isRangeMode ? 'bg-background shadow-sm font-medium' : 'text-muted-foreground'}`}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${isRangeMode ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:bg-background/50'}`}
                     onClick={() => setIsRangeMode(true)}
                 >
                     {t('range')}
