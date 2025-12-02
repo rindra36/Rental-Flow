@@ -29,6 +29,14 @@ export function getPaymentsInMonth(
     month: number
 ): Payment[] {
     return payments.filter((payment) => {
+        // If targetMonth/Year are defined, use them (legacy support: fall back to date if undefined)
+        if (
+            payment.targetMonth !== undefined &&
+            payment.targetYear !== undefined
+        ) {
+            return payment.targetMonth === month && payment.targetYear === year;
+        }
+
         // Use UTC to avoid timezone issues during parsing
         const paymentDate = new Date(
             payment.date.toString().split("T")[0] + "T00:00:00Z"

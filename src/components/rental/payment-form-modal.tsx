@@ -26,18 +26,21 @@ interface PaymentFormModalProps {
   apartmentName: string
   payment?: Payment | null
   currency: Currency
-  rentAmount?: number
+  targetMonth?: number
+  targetYear?: number
 }
 
-export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName, payment, currency, rentAmount }: PaymentFormModalProps) {
+export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName, payment, currency, rentAmount, targetMonth, targetYear }: PaymentFormModalProps) {
   const { t } = useLanguage();
   const [amount, setAmount] = useState("")
   const [date, setDate] = useState("")
   const [isFullPayment, setIsFullPayment] = useState(false)
+  const [error, setError] = useState("")
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (open) {
+        setError("")
         if (payment) {
           setAmount(payment.amount.toString())
           setDate(payment.date.split('T')[0])
@@ -54,12 +57,20 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
     e.preventDefault()
     if (!amount || !date) return
 
+    const numAmount = Number.parseFloat(amount)
+    if (rentAmount && numAmount > rentAmount) {
+        setError(t('payment_exceeds_rent') || "Payment cannot exceed rent amount")
+        return
+    }
+
     startTransition(async () => {
         await onSave({
           leaseId,
-          amount: Number.parseFloat(amount),
+          amount: numAmount,
           date,
           isFullPayment,
+          targetMonth: targetMonth,
+          targetYear: targetYear
         })
         onClose()
     });
@@ -86,7 +97,7 @@ export function PaymentFormModal({ open, onClose, onSave, leaseId, apartmentName
                   onChange={(e) => setAmount(e.target.value)}
                   required
                   disabled={isPending}
-                  className={rentAmount ? "pr-24" : ""}
+                  className={`${rentAmount ? "pr-24" : ""} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                 />
                 {rentAmount && (
                     <Button 

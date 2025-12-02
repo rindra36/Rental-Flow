@@ -41,13 +41,20 @@ export interface IPayment extends Document {
     amount: number;
     date: Date;
     isFullPayment: boolean;
+    targetMonth?: number;
+    targetYear?: number;
 }
-const paymentSchema = new Schema<IPayment>({
-    leaseId: { type: Schema.Types.ObjectId, ref: 'Lease', required: true },
-    amount: { type: Number, required: true },
-    date: { type: Date, required: true },
-    isFullPayment: { type: Boolean, default: false },
-}, { timestamps: true });
+const paymentSchema = new Schema<IPayment>(
+    {
+        leaseId: { type: Schema.Types.ObjectId, ref: "Lease", required: true },
+        amount: { type: Number, required: true },
+        date: { type: Date, required: true },
+        isFullPayment: { type: Boolean, default: false },
+        targetMonth: { type: Number },
+        targetYear: { type: Number },
+    },
+    { timestamps: true }
+);
 
 export const Apartment: Model<IApartment> = mongoose.models.Apartment || mongoose.model<IApartment>('Apartment', apartmentSchema);
 export const Lease: Model<ILease> = mongoose.models.Lease || mongoose.model<ILease>('Lease', leaseSchema);

@@ -19,11 +19,13 @@ export interface Lease {
 }
 
 export interface Payment {
-  id: string
-  leaseId: string // Links payment to a specific lease
-  amount: number
-  date: string // ISO Date
-  isFullPayment: boolean // User can manually flag this payment as settling the debt
+    id: string;
+    leaseId: string; // Links payment to a specific lease
+    amount: number;
+    date: string; // ISO Date
+    isFullPayment: boolean; // User can manually flag this payment as settling the debt
+    targetMonth?: number; // The month this payment is intended for (0-11)
+    targetYear?: number; // The year this payment is intended for
 }
 
 export type ApartmentStatus = "vacant" | "paid" | "deficit"

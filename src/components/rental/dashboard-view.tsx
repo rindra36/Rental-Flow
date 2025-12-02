@@ -143,6 +143,8 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
         leaseId={paymentModal.leaseId}
         apartmentName={paymentModal.apartmentName}
         rentAmount={paymentModal.rentAmount}
+        targetMonth={month}
+        targetYear={year}
         currency={currency}
       />
 
