@@ -113,7 +113,7 @@ export function DashboardView({ apartments, leases, payments, initialYear, initi
                     {t('range')}
                 </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
                 <MonthPicker year={year} month={month} onChange={handleMonthChange} />
                 {isRangeMode && (
                     <>
